@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <title>BLE Attendance System</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+    }
+
+    /* Glassmorphism effect */
+    .glass {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+
+    .glass-dark {
+      background: rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    /* Smooth animations */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .slide-in {
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(-100%);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+
+    /* Print styles */
+    @media print {
+
+      /* Force show app container and sections */
+      #app-container,
+      #section-login,
+      #section-attendance,
+      #section-irregular {
+        display: block !important;
+        visibility: visible !important;
+      }
+
+      /* Hide login section when printing */
+      #section-login {
+        display: none !important;
+      }
+
+      /* Hide navigation, buttons, and interactive elements */
+      header,
+      nav,
+      .nav-btn,
+      #logoutBtn,
+      button,
+      .filter-toggle,
+      .filter-dropdown,
+      #section-dashboard,
+      .max-w-2xl.mx-auto.glass,
+      .stat-card,
+      .chip {
+        display: none !important;
+      }
+
+      /* Reset backgrounds and colors for print */
+      body {
+        background: white !important;
+        color: black !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+
+      main {
+        max-width: 100% !important;
+        padding: 0 !important;
+        margin: 0 !important;
+      }
+
+      .section {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+
+      /* Ensure tables are visible */
+      .overflow-x-auto,
+      .bg-white.rounded-lg.shadow {
+        overflow: visible !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        background: white !important;
+      }
+
+      /* Table print styles */
+      table {
+        width: 100% !important;
+        border-collapse: collapse !important;
+        background: white !important;
+        color: black !important;
+        page-break-inside: auto;
+        display: table !important;
+      }
+
+      thead {
+        display: table-header-group !important;
+        background: #f3f4f6 !important;
+        color: black !important;
+      }
+
+      tbody {
+        display: table-row-group !important;
+      }
+
+      tbody tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
+        background: white !important;
+        color: black !important;
+        display: table-row !important;
+      }
+
+      tbody tr:hover {
+        background: white !important;
+        transform: none !important;
+      }
+
+      tbody tr[style*="display: none"] {
+        display: table-row !important;
+      }
+
+      th,
+      td {
+        border: 1px solid #e5e7eb !important;
+        padding: 8px !important;
+        color: black !important;
+        background: white !important;
+        display: table-cell !important;
+      }
+
+      /* Status badges for print */
+      .status-present,
+      .status-absent {
+        background: white !important;
+        color: black !important;
+        border: 1px solid black !important;
+        padding: 2px 8px !important;
+      }
+
+      .status-present::before {
+        content: '✓ ';
+      }
+
+      .status-absent::before {
+        content: '✗ ';
+      }
+
+      /* Remove glassmorphism effects */
+      .glass,
+      .glass-dark {
+        background: white !important;
+        backdrop-filter: none !important;
+        border: none !important;
+        box-shadow: none !important;
+      }
+
+      /* Image sizing for print */
+      img {
+        max-width: 60px !important;
+        height: auto !important;
+        display: block !important;
+      }
+
+      /* Remove shadows and effects */
+      * {
+        box-shadow: none !important;
+        text-shadow: none !important;
+      }
+
+      /* Page margins */
+      @page {
+        margin: 1cm;
+        size: landscape;
+      }
+    }
+
+    /* Modern button styles */
+    .btn-modern {
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s ease;
+    }
+
+    .btn-modern::before {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      width: 0;
+      height: 0;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.3);
+      transform: translate(-50%, -50%);
+      transition: width 0.6s, height 0.6s;
+    }
+
+    .btn-modern:hover::before {
+      width: 300px;
+      height: 300px;
+    }
+
+    .btn-modern span {
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Table hover effect */
+    tbody tr {
+      transition: all 0.2s ease;
+    }
+
+    tbody tr:hover {
+      background: rgba(255, 255, 255, 0.05);
+      transform: scale(1.01);
+    }
+
+    /* Active nav button */
+    .nav-btn.active {
+      background: rgba(255, 255, 255, 0.3);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+
+    /* Floating animation */
+    @keyframes float {
+
+      0%,
+      100% {
+        transform: translateY(0px);
+      }
+
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .float-anim {
+      animation: float 3s ease-in-out infinite;
+    }
+
+    /* Filter dropdown modern style */
+    .col-filter-dropdown {
+      min-width: 14rem;
+      max-height: 20rem;
+      overflow: auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+    }
+
+    /* Status badges */
+    .status-present {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .status-absent {
+      background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      color: white;
+      font-weight: 600;
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Modern card component */
+    .card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      transition: all 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Stats card */
+    .stat-card {
+      background: linear-gradient(135deg, rgba(255, 255, 255, 0.15) 0%, rgba(255, 255, 255, 0.05) 100%);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 1rem;
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+
+    /* Tooltip */
+    .tooltip {
+      position: relative;
+      cursor: help;
+    }
+
+    .tooltip:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 0.5rem 1rem;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      border-radius: 0.5rem;
+      font-size: 0.75rem;
+      white-space: nowrap;
+      z-index: 1000;
+      margin-bottom: 0.5rem;
+      animation: fadeIn 0.2s ease-in;
+    }
+
+    /* Avatar component */
+    .avatar {
+      width: 2.5rem;
+      height: 2.5rem;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      font-weight: 600;
+      font-size: 1rem;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+    }
+
+    /* Chip component */
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.375rem 0.875rem;
+      background: rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      color: white;
+      transition: all 0.2s ease;
+    }
+
+    .chip:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.05);
+    }
+
+    /* Progress bar */
+    .progress-bar {
+      width: 100%;
+      height: 0.5rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 9999px;
+      transition: width 0.5s ease;
+    }
+
+    /* Modal */
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 1.5rem;
+      padding: 2rem;
+      max-width: 32rem;
+      width: 100%;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    /* Skeleton loader */
+    .skeleton {
+      background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 25%, rgba(255, 255, 255, 0.2) 50%, rgba(255, 255, 255, 0.1) 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.5s infinite;
+    }
+
+    @keyframes shimmer {
+      0% {
+        background-position: 200% 0;
+      }
+
+      100% {
+        background-position: -200% 0;
+      }
+    }
+
+    /* Tag component */
+    .tag {
+      display: inline-block;
+      padding: 0.25rem 0.625rem;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN SECTION -->
+  <section id="section-login" class="section min-h-screen flex items-center justify-center px-4">
+    <div class="w-full max-w-md glass rounded-3xl p-10 fade-in">
+      <div class="text-center mb-8 float-anim">
+        <div class="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+          <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+        </div>
+        <h1 class="text-3xl font-bold text-white tracking-wide">BLE Attendance</h1>
+        <p class="text-purple-200 mt-2">Smart Campus Management</p>
+      </div>
+
+      <p id="errorMsg" class="text-red-300 text-center mb-4 hidden bg-red-500/20 rounded-lg py-2 px-4">
+        ⚠️ Invalid credentials
+      </p>
+
+      <form id="loginForm" class="space-y-6">
+        <div>
+          <label class="block text-white font-medium mb-2 text-sm uppercase tracking-wide" for="userid">
+            User ID
+          </label>
+          <input id="userid" type="text" placeholder="Enter your ID"
+            class="w-full px-4 py-3 bg-white/10 text-white placeholder-purple-200 rounded-xl border border-white/20 focus:ring-2 focus:ring-white/50 focus:bg-white/20 outline-none transition backdrop-blur-sm" />
+        </div>
+        <div>
+          <label class="block text-white font-medium mb-2 text-sm uppercase tracking-wide" for="password">
+            Password
+          </label>
+          <input id="password" type="password" placeholder="Enter password"
+            class="w-full px-4 py-3 bg-white/10 text-white placeholder-purple-200 rounded-xl border border-white/20 focus:ring-2 focus:ring-white/50 focus:bg-white/20 outline-none transition backdrop-blur-sm" />
+        </div>
+        <button type="submit"
+          class="btn-modern w-full py-3 bg-white text-purple-700 font-bold tracking-wide rounded-xl shadow-lg hover:shadow-2xl transition transform hover:-translate-y-1">
+          <span>Sign In</span>
+        </button>
+      </form>
+
+      <div class="mt-6 text-center text-purple-200 text-sm">
+        <p>Demo: Principal / admin</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- APP CONTAINER (shown after login) -->
+  <div id="app-container" class="hidden min-h-screen">
+
+    <!-- Top Nav -->
+    <header class="glass-dark sticky top-0 z-50 backdrop-blur-md">
+      <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+              <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+              </svg>
+            </div>
+            <div>
+              <h1 class="text-xl sm:text-2xl font-bold text-white">BLE Attendance</h1>
+              <p class="text-xs text-purple-200">Smart Surveillance System</p>
+            </div>
+          </div>
+          <nav class="flex gap-2 sm:gap-3 flex-wrap justify-center">
+            <button data-target="dashboard"
+              class="nav-btn px-4 py-2 rounded-xl text-white font-medium transition hover:bg-white/20 border border-transparent">
+              Dashboard
+            </button>
+            <button data-target="attendance"
+              class="nav-btn px-4 py-2 rounded-xl text-white font-medium transition hover:bg-white/20 border border-transparent">
+              Attendance
+            </button>
+            <button data-target="irregular"
+              class="nav-btn px-4 py-2 rounded-xl text-white font-medium transition hover:bg-white/20 border border-transparent">
+              Irregularities
+            </button>
+            <button id="logoutBtn"
+              class="px-4 py-2 rounded-xl bg-red-500/80 hover:bg-red-500 text-white font-medium transition">
+              Logout
+            </button>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-6 space-y-8">
+
+      <!-- DASHBOARD SECTION -->
+      <section id="section-dashboard" class="section fade-in">
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-3">
+              <div class="avatar bg-gradient-to-br from-blue-500 to-blue-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+              </div>
+              <span class="tag">Today</span>
+            </div>
+            <div class="text-white">
+              <p class="text-2xl font-bold mb-1">245</p>
+              <p class="text-sm text-purple-200">Total Students</p>
+            </div>
+            <div class="progress-bar mt-3">
+              <div class="progress-fill" style="width: 85%"></div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-3">
+              <div class="avatar bg-gradient-to-br from-green-500 to-green-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span class="tag bg-green-500/30">Live</span>
+            </div>
+            <div class="text-white">
+              <p class="text-2xl font-bold mb-1">208</p>
+              <p class="text-sm text-purple-200">Present</p>
+            </div>
+            <div class="progress-bar mt-3">
+              <div class="progress-fill bg-gradient-to-r from-green-500 to-green-600" style="width: 85%"></div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-3">
+              <div class="avatar bg-gradient-to-br from-red-500 to-red-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+              <span class="tag bg-red-500/30">Alert</span>
+            </div>
+            <div class="text-white">
+              <p class="text-2xl font-bold mb-1">37</p>
+              <p class="text-sm text-purple-200">Absent</p>
+            </div>
+            <div class="progress-bar mt-3">
+              <div class="progress-fill bg-gradient-to-r from-red-500 to-red-600" style="width: 15%"></div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="flex items-center justify-between mb-3">
+              <div class="avatar bg-gradient-to-br from-yellow-500 to-orange-600">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+              <span class="tag bg-yellow-500/30">Watch</span>
+            </div>
+            <div class="text-white">
+              <p class="text-2xl font-bold mb-1">12</p>
+              <p class="text-sm text-purple-200">Irregularities</p>
+            </div>
+            <div class="progress-bar mt-3">
+              <div class="progress-fill bg-gradient-to-r from-yellow-500 to-orange-600" style="width: 5%"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="max-w-2xl mx-auto glass rounded-3xl p-8 space-y-8">
+          <div class="text-center">
+            <h2 class="text-3xl font-bold text-white mb-2">Dashboard</h2>
+            <p class="text-purple-200">Select options to view detailed reports</p>
+            <div class="flex gap-2 justify-center mt-4 flex-wrap">
+              <span class="chip">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Real-time
+              </span>
+              <span class="chip">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+                BLE Secured
+              </span>
+              <span class="chip">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Auto-sync
+              </span>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <div class="card">
+              <label class="text-lg font-semibold text-white mb-3 block flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Select Report Type
+              </label>
+              <select id="sheetSelect"
+                class="w-full px-4 py-3 bg-white/10 text-white rounded-xl border border-white/20 focus:ring-2 focus:ring-white/50 outline-none transition backdrop-blur-sm">
+                <option value="" class="text-gray-800">Please select...</option>
+                <option value="attendance" class="text-gray-800">📊 ATTENDANCE</option>
+                <option value="irregular" class="text-gray-800">⚠️ IRREGULARITIES</option>
+              </select>
+            </div>
+
+            <div class="card">
+              <label class="text-lg font-semibold text-white mb-3 block flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                Date Range
+              </label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="text-white/80 font-medium text-sm mb-2 block">From Date</label>
+                  <input type="date" id="fromDate"
+                    class="w-full px-4 py-3 bg-white/10 text-white rounded-xl border border-white/20 focus:ring-2 focus:ring-white/50 outline-none transition backdrop-blur-sm" />
+                </div>
+                <div>
+                  <label class="text-white/80 font-medium text-sm mb-2 block">To Date</label>
+                  <input type="date" id="toDate"
+                    class="w-full px-4 py-3 bg-white/10 text-white rounded-xl border border-white/20 focus:ring-2 focus:ring-white/50 outline-none transition backdrop-blur-sm" />
+                </div>
+              </div>
+            </div>
+
+            <button id="applyRangeBtn"
+              class="btn-modern w-full py-4 bg-white text-purple-700 font-bold rounded-xl text-lg hover:shadow-2xl transition transform hover:-translate-y-1 flex items-center justify-center gap-2">
+              <span>Apply Filters</span>
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ATTENDANCE SECTION -->
+      <section id="section-attendance" class="section hidden fade-in">
+        <div class="glass rounded-2xl p-6 mb-6">
+          <div class="flex flex-wrap items-center justify-between gap-4">
+            <div class="flex gap-3">
+              <button id="toggleFiltersBtn"
+                class="btn-modern px-5 py-2.5 bg-blue-500 text-white rounded-xl shadow-lg hover:bg-blue-600 transition">
+                <span>🔍 Filter</span>
+              </button>
+              <button id="removeFiltersBtn"
+                class="btn-modern px-5 py-2.5 bg-red-500 text-white rounded-xl shadow-lg hover:bg-red-600 transition">
+                <span>✖️ Clear</span>
+              </button>
+            </div>
+            <button onclick="window.print()"
+              class="btn-modern px-5 py-2.5 bg-green-500 text-white rounded-xl shadow-lg hover:bg-green-600 transition">
+              <span>🖨️ Print</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table id="attendanceTable" class="min-w-full table-auto text-sm">
+              <thead class="bg-white/20 backdrop-blur-sm">
+                <tr class="text-left text-white">
+                  <th class="px-4 py-4 font-semibold relative">
+                    <div class="flex items-center justify-between">
+                      <span>DATE</span>
+                      <button class="filter-toggle hidden p-1.5 rounded-lg hover:bg-white/20 transition" data-col="0">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                      <div class="col-filter-dropdown rounded-xl shadow-2xl p-4">
+                        <div class="text-sm font-semibold mb-3 text-gray-800">Filter DATE</div>
+                        <div class="filter-values space-y-2"></div>
+                        <div class="mt-4 flex justify-between gap-2">
+                          <button
+                            class="apply-btn px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">Apply</button>
+                          <button
+                            class="clear-btn px-4 py-2 bg-gray-300 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-400 transition">Clear</button>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                  <th class="px-4 py-4 font-semibold relative">
+                    <div class="flex items-center justify-between">
+                      <span>Name</span>
+                      <button class="filter-toggle hidden p-1.5 rounded-lg hover:bg-white/20 transition" data-col="1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                      <div class="col-filter-dropdown rounded-xl shadow-2xl p-4">
+                        <div class="text-sm font-semibold mb-3 text-gray-800">Filter Name</div>
+                        <div class="filter-values space-y-2"></div>
+                        <div class="mt-4 flex justify-between gap-2">
+                          <button
+                            class="apply-btn px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">Apply</button>
+                          <button
+                            class="clear-btn px-4 py-2 bg-gray-300 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-400 transition">Clear</button>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                  <th class="px-4 py-4 font-semibold relative">
+                    <div class="flex items-center justify-between">
+                      <span>Dept</span>
+                      <button class="filter-toggle hidden p-1.5 rounded-lg hover:bg-white/20 transition" data-col="2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                      <div class="col-filter-dropdown rounded-xl shadow-2xl p-4">
+                        <div class="text-sm font-semibold mb-3 text-gray-800">Filter Dept</div>
+                        <div class="filter-values space-y-2"></div>
+                        <div class="mt-4 flex justify-between gap-2">
+                          <button
+                            class="apply-btn px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">Apply</button>
+                          <button
+                            class="clear-btn px-4 py-2 bg-gray-300 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-400 transition">Clear</button>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                  <th class="px-4 py-4 font-semibold relative">
+                    <div class="flex items-center justify-between">
+                      <span>ID</span>
+                      <button class="filter-toggle hidden p-1.5 rounded-lg hover:bg-white/20 transition" data-col="3">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                      <div class="col-filter-dropdown rounded-xl shadow-2xl p-4">
+                        <div class="text-sm font-semibold mb-3 text-gray-800">Filter ID</div>
+                        <div class="filter-values space-y-2"></div>
+                        <div class="mt-4 flex justify-between gap-2">
+                          <button
+                            class="apply-btn px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">Apply</button>
+                          <button
+                            class="clear-btn px-4 py-2 bg-gray-300 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-400 transition">Clear</button>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                  <th class="px-4 py-4 font-semibold relative">
+                    <div class="flex items-center justify-between">
+                      <span>Year</span>
+                      <button class="filter-toggle hidden p-1.5 rounded-lg hover:bg-white/20 transition" data-col="4">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                        </svg>
+                      </button>
+                    </div>
+                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                      <div class="col-filter-dropdown rounded-xl shadow-2xl p-4">
+                        <div class="text-sm font-semibold mb-3 text-gray-800">Filter Year</div>
+                        <div class="filter-values space-y-2"></div>
+                        <div class="mt-4 flex justify-between gap-2">
+                          <button
+                            class="apply-btn px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition">Apply</button>
+                          <button
+                            class="clear-btn px-4 py-2 bg-gray-300 text-gray-800 rounded-lg text-sm font-medium hover:bg-gray-400 transition">Clear</button>
+                        </div>
+                      </div>
+                    </div>
+                  </th>
+                  <th class="px-4 py-4 font-semibold">P1</th>
+                  <th class="px-4 py-4 font-semibold">P2</th>
+                  <th class="px-4 py-4 font-semibold">P3</th>
+                  <th class="px-4 py-4 font-semibold">P4</th>
+                </tr>
+              </thead>
+              <tbody class="text-white">
+                <tr class="border-b border-white/10">
+                  <td class="px-4 py-3">2025-01-10</td>
+                  <td class="px-4 py-3">Gibson</td>
+                  <td class="px-4 py-3">ECE</td>
+                  <td class="px-4 py-3">101</td>
+                  <td class="px-4 py-3">1</td>
+                  <td class="px-4 py-3"><span class="status-present">P</span></td>
+                  <td class="px-4 py-3"><span class="status-absent">A</span></td>
+                  <td class="px-4 py-3"><span class="status-present">P</span></td>
+                  <td class="px-4 py-3"><span class="status-absent">A</span></td>
+                </tr>
+                <tr class="border-b border-white/10">
+                  <td class="px-4 py-3">2025-01-11</td>
+                  <td class="px-4 py-3">Dharshini</td>
+                  <td class="px-4 py-3">CSE</td>
+                  <td class="px-4 py-3">102</td>
+                  <td class="px-4 py-3">3</td>
+                  <td class="px-4 py-3"><span class="status-absent">A</span></td>
+                  <td class="px-4 py-3"><span class="status-absent">A</span></td>
+                  <td class="px-4 py-3"><span class="status-present">P</span></td>
+                  <td class="px-4 py-3"><span class="status-present">P</span></td>
+                </tr>
+                <tr class="border-b border-white/10">
+                  <td class="px-4 py-3">2025-01-12</td>
+                  <td class="px-4 py-3">Rohit</td>
+                  <td class="px-4 py-3">ECE</td>
+                  <td class="px-4 py-3">103</td>
+                  <td class="px-4 py-3">4</td>
+                  <td class="px-4 py-3"><span class="status-present">P</span></td>
+                  <td class="px-4 py-3"><span class="status-present">P</span></td>
+                  <td class="px-4 py-3"><span class="status-absent">A</span></td>
+                  <td class="px-4 py-3"><span class="status-absent">A</span></td>
+                </tr>
+                <tr class="border-b border-white/10">
+                  <td class="px-4 py-3">2025-01-13</td>
+                  <td class="px-4 py-3">Asha</td>
+                  <td class="px-4 py-3">MECH</td>
+                  <td class="px-4 py-3">104</td>
+                  <td class="px-4 py-3">2</td>
+                  <td class="px-4 py-3"><span class="status-present">P</span></td>
+                  <td class="px-4 py-3"><span class="status-present">P</span></td>
+                  <td class="px-4 py-3"><span class="status-present">P</span></td>
+                  <td class="px-4 py-3"><span class="status-present">P</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- IRREGULARITIES SECTION -->
+      <section id="section-irregular" class="section hidden fade-in">
+        <div class="glass rounded-2xl p-6 mb-6">
+          <div class="flex flex-wrap gap-4">
+            <button id="filterBtn"
+              class="btn-modern px-5 py-2.5 bg-blue-500 text-white rounded-xl shadow-lg hover:bg-blue-600 transition">
+              <span>🔍 Filter</span>
+            </button>
+            <button id="removeFilterBtn"
+              class="btn-modern px-5 py-2.5 bg-red-500 text-white rounded-xl shadow-lg hover:bg-red-600 transition hidden">
+              <span>✖️ Remove Filter</span>
+            </button>
+            <button onclick="window.print()"
+              class="btn-modern px-5 py-2.5 bg-green-500 text-white rounded-xl shadow-lg hover:bg-green-600 transition">
+              <span>🖨️ Print</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl overflow-hidden">
+          <div class="overflow-x-auto">
+            <table id="dataTable" class="min-w-full">
+              <thead class="bg-white/20 backdrop-blur-sm text-white">
+                <tr>
+                  <th class="py-4 px-4 text-left font-semibold">Date</th>
+                  <th class="py-4 px-4 text-left font-semibold">Name</th>
+                  <th class="py-4 px-4 text-left font-semibold">Dept</th>
+                  <th class="py-4 px-4 text-left font-semibold">ID</th>
+                  <th class="py-4 px-4 text-left font-semibold">Year</th>
+                  <th class="py-4 px-4 text-left font-semibold">Time</th>
+                  <th class="py-4 px-4 text-left font-semibold">Image</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody" class="text-white">
+                <tr data-date="2025-01-10" class="border-b border-white/10">
+                  <td class="py-3 px-4">2025-01-10</td>
+                  <td class="py-3 px-4">Arun</td>
+                  <td class="py-3 px-4">ECE</td>
+                  <td class="py-3 px-4">101</td>
+                  <td class="py-3 px-4">1</td>
+                  <td class="py-3 px-4">09:10 AM</td>
+                  <td class="py-3 px-4">
+                    <img src="student_skipping_1.png" class="w-10 h-10 rounded-full border-2 border-white/30" />
+                  </td>
+                </tr>
+                <tr data-date="2025-01-11" class="border-b border-white/10">
+                  <td class="py-3 px-4">2025-01-11</td>
+                  <td class="py-3 px-4">Bala</td>
+                  <td class="py-3 px-4">CSE</td>
+                  <td class="py-3 px-4">103</td>
+                  <td class="py-3 px-4">2</td>
+                  <td class="py-3 px-4">09:12 AM</td>
+                  <td class="py-3 px-4">
+                    <img src="student_skipping_2.png" class="w-10 h-10 rounded-full border-2 border-white/30" />
+                  </td>
+                </tr>
+                <tr data-date="2025-01-12" class="border-b border-white/10">
+                  <td class="py-3 px-4">2025-01-12</td>
+                  <td class="py-3 px-4">Chitra</td>
+                  <td class="py-3 px-4">ECE</td>
+                  <td class="py-3 px-4">102</td>
+                  <td class="py-3 px-4">3</td>
+                  <td class="py-3 px-4">09:14 AM</td>
+                  <td class="py-3 px-4">
+                    <img src="student_skipping_3.png" class="w-10 h-10 rounded-full border-2 border-white/30" />
+                  </td>
+                </tr>
+                <tr data-date="2025-01-13" class="border-b border-white/10">
+                  <td class="py-3 px-4">2025-01-13</td>
+                  <td class="py-3 px-4">Daniel</td>
+                  <td class="py-3 px-4">MECH</td>
+                  <td class="py-3 px-4">104</td>
+                  <td class="py-3 px-4">4</td>
+                  <td class="py-3 px-4">09:16 AM</td>
+                  <td class="py-3 px-4">
+                    <img src="student_skipping_4.png" class="w-10 h-10 rounded-full border-2 border-white/30" />
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- OPTIMIZED COMBINED SCRIPTS -->
+  <script>
+    // Login validation
+    const loginForm = document.getElementById('loginForm');
+    const errorMsg = document.getElementById('errorMsg');
+    const loginSection = document.getElementById('section-login');
+    const appContainer = document.getElementById('app-container');
+
+    const validUser = "Principal";
+    const validPass = "admin";
+
+    loginForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const user = document.getElementById('userid').value.trim();
+      const pass = document.getElementById('password').value.trim();
+
+      if (user === validUser && pass === validPass) {
+        errorMsg.classList.add('hidden');
+        loginSection.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        showSection('dashboard');
+      } else {
+        errorMsg.classList.remove('hidden');
+      }
+    });
+
+    // Logout handler
+    document.getElementById('logoutBtn').addEventListener('click', () => {
+      appContainer.classList.add('hidden');
+      loginSection.classList.remove('hidden');
+      document.getElementById('userid').value = '';
+      document.getElementById('password').value = '';
+      errorMsg.classList.add('hidden');
+    });
+
+    // SPA routing - cached elements
+    const sectionMap = {
+      dashboard: document.getElementById('section-dashboard'),
+      attendance: document.getElementById('section-attendance'),
+      irregular: document.getElementById('section-irregular')
+    };
+    const navBtns = document.querySelectorAll('.nav-btn');
+
+    // lazy init flags
+    let attendanceInitialized = false;
+    let irregularInitialized = false;
+
+    function showSection(key) {
+      Object.entries(sectionMap).forEach(([k, el]) => {
+        if (!el) return;
+        el.classList.toggle('hidden', k !== key);
+      });
+
+      // Update active nav button
+      navBtns.forEach(btn => {
+        if (btn.getAttribute('data-target') === key) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+
+      if (key) location.hash = key;
+
+      // lazy initialize per section once
+      if (key === 'attendance' && !attendanceInitialized) {
+        initAttendanceFilters();
+        attendanceInitialized = true;
+      }
+      if (key === 'irregular' && !irregularInitialized) {
+        initIrregularFilters();
+        irregularInitialized = true;
+      }
+    }
+
+    navBtns.forEach(btn => {
+      btn.addEventListener('click', () => showSection(btn.getAttribute('data-target')));
+    });
+
+    // handle hash changes for deep linking
+    window.addEventListener('hashchange', () => {
+      const k = (location.hash || '#dashboard').replace('#', '');
+      showSection(k);
+    });
+
+    // Dashboard: Apply Date Range & Jump to Report
+    document.getElementById('applyRangeBtn')?.addEventListener('click', () => {
+      const sheetValue = document.getElementById('sheetSelect')?.value;
+      const fromDate = document.getElementById('fromDate')?.value;
+      const toDate = document.getElementById('toDate')?.value;
+
+      if (!sheetValue) {
+        alert("Please select a report type.");
+        return;
+      }
+
+      // Switch to section
+      showSection(sheetValue);
+
+      // Apply date filter if dates are selected
+      if (fromDate && toDate) {
+        // Small delay to ensure section is visible and tables are ready
+        setTimeout(() => {
+          if (sheetValue === 'attendance') {
+            filterTableByDate('attendanceTable', fromDate, toDate, 0); // Col 0 is Date
+          } else if (sheetValue === 'irregular') {
+            filterTableByDate('dataTable', fromDate, toDate, 0); // Col 0 is Date
+          }
+        }, 100);
+      }
+    });
+
+    function filterTableByDate(tableId, start, end, dateColIndex) {
+      const table = document.getElementById(tableId);
+      if (!table) return;
+
+      const tbody = table.querySelector('tbody');
+      const rows = tbody.querySelectorAll('tr');
+      const startDate = new Date(start);
+      const endDate = new Date(end);
+      // Set end date to end of day
+      endDate.setHours(23, 59, 59, 999);
+
+      rows.forEach(row => {
+        const cell = row.children[dateColIndex];
+        if (!cell) return;
+
+        const cellDateStr = cell.textContent.trim();
+        const cellDate = new Date(cellDateStr);
+
+        if (!isNaN(cellDate) && cellDate >= startDate && cellDate <= endDate) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+
+    // Attendance filters: initialized when section first shown
+    function initAttendanceFilters() {
+      const toggleBtn = document.getElementById('toggleFiltersBtn');
+      const removeBtn = document.getElementById('removeFiltersBtn');
+      const table = document.getElementById('attendanceTable');
+      const tbody = table ? table.querySelector('tbody') : null;
+
+      let filtersVisible = false;
+      let activeFilters = {};
+
+      function updateFilterToggleVisibility() {
+        table.querySelectorAll('.filter-toggle').forEach(btn => {
+          if (filtersVisible) btn.classList.remove('hidden');
+          else btn.classList.add('hidden');
+        });
+        if (!filtersVisible) table.querySelectorAll('.filter-dropdown').forEach(d => d.classList.add('hidden'));
+      }
+
+      toggleBtn?.addEventListener('click', () => {
+        filtersVisible = !filtersVisible;
+        updateFilterToggleVisibility();
+      });
+
+      removeBtn?.addEventListener('click', () => {
+        activeFilters = {};
+        filtersVisible = false;
+        updateFilterToggleVisibility();
+        // Reset all rows
+        if (tbody) tbody.querySelectorAll('tr').forEach(r => r.style.display = '');
+      });
+
+      table.querySelectorAll('.filter-toggle').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const colIndex = Number(btn.getAttribute('data-col'));
+          table.querySelectorAll('.filter-dropdown').forEach(d => d.classList.add('hidden'));
+          const dropdown = btn.closest('th').querySelector('.filter-dropdown');
+          if (!dropdown) return;
+          populateDropdown(colIndex, dropdown);
+          dropdown.classList.toggle('hidden');
+        });
+      });
+
+      function populateDropdown(colIndex, dropdown) {
+        if (!tbody) return;
+        const container = dropdown.querySelector('.filter-values');
+        container.innerHTML = '';
+        const values = new Set();
+
+        tbody.querySelectorAll('tr').forEach(row => {
+          if (!row.children[colIndex]) return;
+          values.add(row.children[colIndex].textContent.trim());
+        });
+
+        const arr = Array.from(values).sort((a, b) => {
+          const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+          if (dateRegex.test(a) && dateRegex.test(b)) return new Date(a) - new Date(b);
+          const na = Number(a), nb = Number(b);
+          if (!isNaN(na) && !isNaN(nb)) return na - nb;
+          return String(a).localeCompare(String(b));
+        });
+
+        arr.forEach(val => {
+          const safeId = `chk_col${colIndex}_${String(val).replace(/[^a-z0-9]/gi, '_')}`;
+          const isChecked = activeFilters[colIndex]?.includes(val);
+          const wrapper = document.createElement('div');
+          wrapper.className = 'flex items-center gap-2';
+          wrapper.innerHTML = `
+            <input type="checkbox" id="${safeId}" class="chk-val w-4 h-4 rounded" data-col="${colIndex}" value="${val}" ${isChecked ? 'checked' : ''} />
+            <label for="${safeId}" class="text-sm text-gray-700 cursor-pointer">${val}</label>
+          `;
+          container.appendChild(wrapper);
+        });
+
+        dropdown.querySelector('.apply-btn').onclick = (ev) => {
+          ev.stopPropagation();
+          activeFilters[colIndex] = Array.from(container.querySelectorAll('.chk-val:checked')).map(c => c.value);
+          dropdown.classList.add('hidden');
+          filterTable();
+        };
+
+        dropdown.querySelector('.clear-btn').onclick = (ev) => {
+          ev.stopPropagation();
+          delete activeFilters[colIndex];
+          dropdown.classList.add('hidden');
+          filterTable();
+        };
+      }
+
+      function filterTable() {
+        if (!tbody) return;
+        tbody.querySelectorAll('tr').forEach(row => {
+          let show = true;
+          for (const k in activeFilters) {
+            const col = Number(k);
+            const sel = activeFilters[k];
+            if (!sel || sel.length === 0) continue;
+            if (!row.children[col] || !sel.includes(row.children[col].textContent.trim())) {
+              show = false;
+              break;
+            }
+          }
+          row.style.display = show ? '' : 'none';
+        });
+      }
+
+      document.addEventListener('click', (e) => {
+        if (e.target.closest('.filter-dropdown') || e.target.closest('.filter-toggle')) return;
+        table.querySelectorAll('.filter-dropdown').forEach(d => d.classList.add('hidden'));
+      });
+
+      updateFilterToggleVisibility();
+    }
+
+    // Irregularities filters: initialized when section first shown
+    function initIrregularFilters() {
+      const irrTable = document.getElementById('dataTable');
+      const filterBtn = document.getElementById('filterBtn');
+      const removeFilterBtn = document.getElementById('removeFilterBtn');
+      let filtersAdded = false;
+
+      function addIrrFilters() {
+        if (filtersAdded) return;
+
+        const headers = irrTable?.querySelectorAll('thead th');
+        if (!headers) return;
+
+        headers.forEach((th, colIndex) => {
+          // Skip the Image column (last column)
+          if (colIndex === headers.length - 1) return;
+
+          const dropdown = document.createElement('select');
+          dropdown.className = 'mt-2 w-full bg-white/90 backdrop-blur-sm text-gray-800 border border-white/30 px-2 py-1.5 rounded-lg shadow-sm text-sm';
+          dropdown.innerHTML = "<option value=''>All</option>";
+
+          const rows = irrTable.querySelectorAll('tbody tr');
+          const values = [...new Set([...rows].map(row => row.children[colIndex].innerText))];
+          values.sort();
+
+          values.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v;
+            opt.textContent = v;
+            dropdown.appendChild(opt);
+          });
+
+          dropdown.onchange = applyIrrFilters;
+          th.appendChild(dropdown);
+        });
+        filtersAdded = true;
+      }
+
+      function removeIrrFilters() {
+        irrTable?.querySelectorAll('thead th select').forEach(sel => sel.remove());
+        irrTable?.querySelectorAll('tbody tr').forEach(row => row.style.display = '');
+        filtersAdded = false;
+      }
+
+      function applyIrrFilters() {
+        const headers = irrTable.querySelectorAll('thead th select');
+        const rows = irrTable.querySelectorAll('tbody tr');
+
+        rows.forEach(row => {
+          let visible = true;
+          // Note: headers collection only contains the selects, we need to map them back to columns
+          // Since we skipped the last column, the selects correspond to columns 0 to N-2
+
+          // Better approach: iterate over all columns that have a select
+          const selects = irrTable.querySelectorAll('thead th select');
+          selects.forEach((dropdown) => {
+            const th = dropdown.parentElement;
+            const colIndex = Array.from(th.parentElement.children).indexOf(th);
+
+            if (dropdown.value && row.children[colIndex].innerText !== dropdown.value) {
+              visible = false;
+            }
+          });
+
+          row.style.display = visible ? '' : 'none';
+        });
+      }
+
+      filterBtn?.addEventListener('click', () => {
+        addIrrFilters();
+        filterBtn.classList.add('hidden'); // Hide filter button when active
+        removeFilterBtn?.classList.remove('hidden');
+      });
+
+      removeFilterBtn?.addEventListener('click', () => {
+        removeIrrFilters();
+        removeFilterBtn?.classList.add('hidden');
+        filterBtn.classList.remove('hidden'); // Show filter button again
+      });
+    }
+  </script>
+
+</body>
+
+</html>
