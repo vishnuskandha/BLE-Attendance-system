@@ -1,0 +1,21 @@
+{
+  "name": "ble-attendance-api",
+  "version": "1.0.0",
+  "description": "BLE Attendance System - Vercel Serverless Backend",
+  "main": "api/attendance.js",
+  "scripts": {
+    "start": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "keywords": [
+    "ble",
+    "attendance",
+    "esp32",
+    "vercel"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>BLE Attendance System</title>
+    <style>
+        .col-filter-dropdown {
+            min-width: 12rem;
+            max-height: 18rem;
+            overflow: auto;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- LOGIN SECTION -->
+    <section id="section-login" class="section min-h-screen flex items-center justify-center px-4">
+        <div class="w-full max-w-md bg-white shadow-xl rounded-2xl p-8">
+            <h1 class="text-2xl font-semibold text-center tracking-wide mb-10">BLE ATTENDANCE PORTAL</h1>
+            <p id="errorMsg" class="text-red-600 text-center mb-4 hidden">Invalid User ID or Password</p>
+            <form id="loginForm" class="space-y-6">
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2" for="userid">USER ID</label>
+                    <input id="userid" type="text"
+                        class="w-full px-4 py-3 bg-gray-200 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition" />
+                </div>
+                <div>
+                    <label class="block text-gray-700 font-medium mb-2" for="password">PASSWORD</label>
+                    <input id="password" type="password"
+                        class="w-full px-4 py-3 bg-gray-200 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition" />
+                </div>
+                <button type="submit"
+                    class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold tracking-wide rounded-lg shadow-md transition">
+                    SIGN IN
+                </button>
+            </form>
+        </div>
+    </section>
+
+    <!-- APP CONTAINER (shown after login) -->
+    <div id="app-container" class="hidden">
+
+        <!-- Top Nav -->
+        <header class="bg-white shadow sticky top-0 z-50">
+            <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">BLE Attendance & Surveillance</h1>
+                <div class="flex items-center gap-4">
+                    <div id="realtimeClock" class="text-lg font-semibold text-gray-700"></div>
+                    <nav class="flex gap-2 sm:gap-3">
+                        <button data-target="dashboard"
+                            class="nav-btn px-3 py-2 rounded bg-gray-200 hover:bg-gray-300">Dashboard</button>
+                        <button data-target="attendance"
+                            class="nav-btn px-3 py-2 rounded bg-gray-200 hover:bg-gray-300">Attendance</button>
+                        <button data-target="irregular"
+                            class="nav-btn px-3 py-2 rounded bg-gray-200 hover:bg-gray-300">Irregularities</button>
+                        <button id="logoutBtn" class="px-3 py-2 rounded bg-gray-300 hover:bg-gray-400">Logout</button>
+                    </nav>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-7xl mx-auto p-6 space-y-8">
+
+            <!-- DASHBOARD SECTION -->
+            <section id="section-dashboard" class="section">
+                <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md space-y-8">
+                    <h2 class="text-2xl font-semibold">Dashboard</h2>
+
+                    <!-- SHEET DROPDOWN -->
+                    <div>
+                        <label class="text-xl font-semibold text-gray-800">Sheet</label>
+                        <select id="sheetSelect" class="mt-2 block w-full border-b-2 border-purple-300 focus:border-purple-600 
+                         outline-none py-2 text-gray-700 bg-transparent text-lg">
+                            <option value="">Please select...</option>
+                            <option value="attendance">ATTENDANCE</option>
+                            <option value="irregular">IRREGULARITIES</option>
+                        </select>
+                    </div>
+
+                    <!-- DATE RANGE -->
+                    <div>
+                        <label class="text-xl font-semibold text-gray-800">Date Range</label>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
+                            <div>
+                                <label class="text-gray-700 font-medium">From Date</label>
+                                <input type="date" id="fromDate" max="2026-01-02"
+                                    class="mt-2 w-full border border-gray-300 rounded px-4 py-2 text-gray-700 text-lg" />
+                            </div>
+                            <div>
+                                <label class="text-gray-700 font-medium">To Date</label>
+                                <input type="date" id="toDate" max="2026-01-02"
+                                    class="mt-2 w-full border border-gray-300 rounded px-4 py-2 text-gray-700 text-lg" />
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <button id="applyRangeBtn"
+                                class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg text-lg hover:bg-green-700 transition">Apply</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ATTENDANCE SECTION (embedded from attendance.html) -->
+            <section id="section-attendance" class="section hidden">
+                <div class="flex items-center justify-between mb-4">
+                    <div class="flex gap-3">
+                        <button id="toggleFiltersBtn"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700">FILTER</button>
+                        <button id="removeFiltersBtn"
+                            class="px-4 py-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600">REMOVE
+                            FILTER</button>
+                    </div>
+                    <div class="flex gap-3">
+                        <button onclick="window.print()"
+                            class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">PRINT</button>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
+                    <table id="attendanceTable" class="min-w-full table-fixed text-sm">
+                        <thead class="bg-gray-50 border-b">
+                            <tr class="text-left">
+                                <th class="w-1/8 px-4 py-3 relative">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">DATE</span>
+                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="0"
+                                            aria-label="Filter DATE">
+                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
+                                            <div class="text-sm font-semibold mb-2">Filter DATE</div>
+                                            <div class="filter-values space-y-2"></div>
+                                            <div class="mt-3 flex justify-between">
+                                                <button
+                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
+                                                <button
+                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="w-1/6 px-4 py-3 relative">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">Name</span>
+                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="1"
+                                            aria-label="Filter Name">
+                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
+                                            <div class="text-sm font-semibold mb-2">Filter Name</div>
+                                            <div class="filter-values space-y-2"></div>
+                                            <div class="mt-3 flex justify-between">
+                                                <button
+                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
+                                                <button
+                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="w-1/8 px-4 py-3 relative">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">Dept</span>
+                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="2"
+                                            aria-label="Filter Dept">
+                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
+                                            <div class="text-sm font-semibold mb-2">Filter Dept</div>
+                                            <div class="filter-values space-y-2"></div>
+                                            <div class="mt-3 flex justify-between">
+                                                <button
+                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
+                                                <button
+                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="w-1/10 px-4 py-3 relative">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">ID</span>
+                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="3"
+                                            aria-label="Filter ID">
+                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
+                                            <div class="text-sm font-semibold mb-2">Filter ID</div>
+                                            <div class="filter-values space-y-2"></div>
+                                            <div class="mt-3 flex justify-between">
+                                                <button
+                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
+                                                <button
+                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="w-1/12 px-4 py-3 relative">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">Year</span>
+                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="4"
+                                            aria-label="Filter Year">
+                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
+                                            <div class="text-sm font-semibold mb-2">Filter Year</div>
+                                            <div class="filter-values space-y-2"></div>
+                                            <div class="mt-3 flex justify-between">
+                                                <button
+                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
+                                                <button
+                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="w-1/10 px-4 py-3 relative">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">PERIOD 1<br/><span class="text-xs">8:15-10:15</span></span>
+                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="5"
+                                            aria-label="Filter Period 1">
+                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor">
+                                                <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
+                                            <div class="text-sm font-semibold mb-2">Filter Period 1</div>
+                                            <div class="filter-values space-y-2"></div>
+                                            <div class="mt-3 flex justify-between">
+                                                <button
+                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
+                                                <button
+                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="w-1/10 px-4 py-3 relative">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">PERIOD 2<br/><span class="text-xs">10:30-12:45</span></span>
+                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="6"
+                                            aria-label="Filter Period 2">
+                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor">
+                                                <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
+                                            <div class="text-sm font-semibold mb-2">Filter Period 2</div>
+                                            <div class="filter-values space-y-2"></div>
+                                            <div class="mt-3 flex justify-between">
+                                                <button
+                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
+                                                <button
+                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                                <th class="w-1/10 px-4 py-3 relative">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-medium">PERIOD 3<br/><span class="text-xs">1:30-3:45</span></span>
+                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="7"
+                                            aria-label="Filter Period 3">
+                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
+                                                stroke="currentColor">
+                                                <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
+                                            <div class="text-sm font-semibold mb-2">Filter Period 3</div>
+                                            <div class="filter-values space-y-2"></div>
+                                            <div class="mt-3 flex justify-between">
+                                                <button
+                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
+                                                <button
+                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            <tr class="border-b">
+                                <td class="px-4 py-3">02-01-2026</td>
+                                <td class="px-4 py-3">Mathumitha R</td>
+                                <td class="px-4 py-3">IT-B</td>
+                                <td class="px-4 py-3">310622205081</td>
+                                <td class="px-4 py-3">4</td>
+                                <td class="px-4 py-3">P</td>
+                                <td class="px-4 py-3">P</td>
+                                <td class="px-4 py-3">P</td>
+                            </tr>
+                            <tr class="border-b">
+                                <td class="px-4 py-3">02-01-2026</td>
+                                <td class="px-4 py-3">Lipsa Sahoo</td>
+                                <td class="px-4 py-3">IT-B</td>
+                                <td class="px-4 py-3">310622205075</td>
+                                <td class="px-4 py-3">4</td>
+                                <td class="px-4 py-3">P</td>
+                                <td class="px-4 py-3">P</td>
+                                <td class="px-4 py-3">P</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- IRREGULARITIES SECTION (embedded from IRREGULAR.html) -->
+            <section id="section-irregular" class="section hidden">
+                <div class="flex gap-4 mb-4">
+                    <button id="filterBtn" class="px-5 py-2 bg-blue-600 text-white rounded">FILTER</button>
+                    <button id="removeFilterBtn" class="px-5 py-2 bg-gray-600 text-white rounded hidden">REMOVE
+                        FILTER</button>
+                    <button onclick="window.print()" class="px-5 py-2 bg-green-600 text-white rounded">PRINT</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table id="dataTable" class="min-w-full bg-white rounded shadow">
+                        <thead class="bg-gray-800 text-white">
+                            <tr>
+                                <th class="py-3 px-4 text-left relative">Date</th>
+                                <th class="py-3 px-4 text-left relative">Name</th>
+                                <th class="py-3 px-4 text-left relative">Dept</th>
+                                <th class="py-3 px-4 text-left relative">ID</th>
+                                <th class="py-3 px-4 text-left relative">Year</th>
+                                <th class="py-3 px-4 text-left relative">Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="text-gray-700">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <!-- OPTIMIZED COMBINED SCRIPTS -->
+    <script>
+        // Login validation
+        const loginForm = document.getElementById('loginForm');
+        const errorMsg = document.getElementById('errorMsg');
+        const loginSection = document.getElementById('section-login');
+        const appContainer = document.getElementById('app-container');
+
+        const validUser = "Principal";
+        const validPass = "admin";
+
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const user = document.getElementById('userid').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            if (user === validUser && pass === validPass) {
+                errorMsg.classList.add('hidden');
+                loginSection.classList.add('hidden');
+                appContainer.classList.remove('hidden');
+                showSection('dashboard');
+            } else {
+                errorMsg.classList.remove('hidden');
+            }
+        });
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            appContainer.classList.add('hidden');
+            loginSection.classList.remove('hidden');
+            document.getElementById('userid').value = '';
+            document.getElementById('password').value = '';
+            errorMsg.classList.add('hidden');
+        });
+
+        // Real-time clock
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            
+            const clockElement = document.getElementById('realtimeClock');
+            if (clockElement) {
+                clockElement.textContent = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+            }
+        }
+        
+        updateClock(); // Initial call
+        setInterval(updateClock, 1000); // Update every second
+
+        // SPA routing - cached elements
+        const sectionMap = {
+            dashboard: document.getElementById('section-dashboard'),
+            attendance: document.getElementById('section-attendance'),
+            irregular: document.getElementById('section-irregular')
+        };
+        const navBtns = document.querySelectorAll('.nav-btn');
+
+        // lazy init flags
+        let attendanceInitialized = false;
+        let irregularInitialized = false;
+
+        function showSection(key) {
+            Object.entries(sectionMap).forEach(([k, el]) => {
+                if (!el) return;
+                el.classList.toggle('hidden', k !== key);
+            });
+            if (key) location.hash = key;
+
+            // lazy initialize per section once
+            if (key === 'attendance' && !attendanceInitialized) {
+                initAttendanceFilters();
+                attendanceInitialized = true;
+            }
+            if (key === 'irregular' && !irregularInitialized) {
+                initIrregularFilters();
+                irregularInitialized = true;
+            }
+        }
+
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => showSection(btn.getAttribute('data-target')));
+        });
+
+        // handle hash changes for deep linking
+        window.addEventListener('hashchange', () => {
+            const k = (location.hash || '#dashboard').replace('#', '');
+            showSection(k);
+        });
+
+        // Dashboard: jump to selected sheet
+        document.getElementById('applyRangeBtn')?.addEventListener('click', () => {
+            const value = document.getElementById('sheetSelect')?.value;
+            if (value === 'attendance') showSection('attendance');
+            else if (value === 'irregular') showSection('irregular');
+        });
+
+        // Attendance filters: initialized when section first shown
+        function initAttendanceFilters() {
+            const toggleBtn = document.getElementById('toggleFiltersBtn');
+            const removeBtn = document.getElementById('removeFiltersBtn');
+            const table = document.getElementById('attendanceTable');
+            const tbody = table ? table.querySelector('tbody') : null;
+
+            let filtersVisible = false;
+            let activeFilters = {};
+
+            function updateFilterToggleVisibility() {
+                table.querySelectorAll('.filter-toggle').forEach(btn => {
+                    if (filtersVisible) btn.classList.remove('hidden');
+                    else btn.classList.add('hidden');
+                });
+                if (!filtersVisible) table.querySelectorAll('.filter-dropdown').forEach(d => d.classList.add('hidden'));
+            }
+
+            toggleBtn?.addEventListener('click', () => {
+                filtersVisible = !filtersVisible;
+                updateFilterToggleVisibility();
+            });
+
+            removeBtn?.addEventListener('click', () => {
+                activeFilters = {};
+                filtersVisible = false;
+                updateFilterToggleVisibility();
+                filterTable();
+            });
+
+            table.querySelectorAll('.filter-toggle').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const colIndex = Number(btn.getAttribute('data-col'));
+                    table.querySelectorAll('.filter-dropdown').forEach(d => d.classList.add('hidden'));
+                    const dropdown = btn.closest('th').querySelector('.filter-dropdown');
+                    if (!dropdown) return;
+                    populateDropdown(colIndex, dropdown);
+                    dropdown.classList.toggle('hidden');
+                });
+            });
+
+            function populateDropdown(colIndex, dropdown) {
+                if (!tbody) return;
+                const container = dropdown.querySelector('.filter-values');
+                container.innerHTML = '';
+                const values = new Set();
+
+                tbody.querySelectorAll('tr').forEach(row => {
+                    if (!row.children[colIndex]) return;
+                    values.add(row.children[colIndex].textContent.trim());
+                });
+
+                const arr = Array.from(values).sort((a, b) => {
+                    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+                    if (dateRegex.test(a) && dateRegex.test(b)) return new Date(a) - new Date(b);
+                    const na = Number(a), nb = Number(b);
+                    if (!isNaN(na) && !isNaN(nb)) return na - nb;
+                    return String(a).localeCompare(String(b));
+                });
+
+                arr.forEach(val => {
+                    const safeId = `chk_col${colIndex}_${String(val).replace(/[^a-z0-9]/gi, '_')}`;
+                    const isChecked = activeFilters[colIndex]?.includes(val);
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'flex items-center gap-2';
+                    wrapper.innerHTML = `
+            <input type="checkbox" id="${safeId}" class="chk-val" data-col="${colIndex}" value="${val}" ${isChecked ? 'checked' : ''} />
+            <label for="${safeId}" class="text-sm">${val}</label>
+          `;
+                    container.appendChild(wrapper);
+                });
+
+                dropdown.querySelector('.apply-btn').onclick = (ev) => {
+                    ev.stopPropagation();
+                    activeFilters[colIndex] = Array.from(container.querySelectorAll('.chk-val:checked')).map(c => c.value);
+                    dropdown.classList.add('hidden');
+                    filterTable();
+                };
+
+                dropdown.querySelector('.clear-btn').onclick = (ev) => {
+                    ev.stopPropagation();
+                    delete activeFilters[colIndex];
+                    dropdown.classList.add('hidden');
+                    filterTable();
+                };
+            }
+
+            function filterTable() {
+                if (!tbody) return;
+                tbody.querySelectorAll('tr').forEach(row => {
+                    let show = true;
+                    for (const k in activeFilters) {
+                        const col = Number(k);
+                        const sel = activeFilters[k];
+                        if (!sel || sel.length === 0) continue;
+                        if (!row.children[col] || !sel.includes(row.children[col].textContent.trim())) {
+                            show = false;
+                            break;
+                        }
+                    }
+                    row.style.display = show ? '' : 'none';
+                });
+            }
+
+            document.addEventListener('click', (e) => {
+                if (e.target.closest('.filter-dropdown') || e.target.closest('.filter-toggle')) return;
+                table.querySelectorAll('.filter-dropdown').forEach(d => d.classList.add('hidden'));
+            });
+
+            updateFilterToggleVisibility();
+        }
+
+        // Irregularities filters: initialized when section first shown
+        function initIrregularFilters() {
+            const irrTable = document.getElementById('dataTable');
+            const filterBtn = document.getElementById('filterBtn');
+            const removeFilterBtn = document.getElementById('removeFilterBtn');
+
+            function addIrrFilters() {
+                irrTable?.querySelectorAll('thead th').forEach((th, colIndex) => {
+                    const dropdown = document.createElement('select');
+                    dropdown.className = 'absolute right-2 top-1/2 -translate-y-1/2 bg-white text-black border px-1 py-0.5 rounded shadow';
+                    dropdown.innerHTML = "<option value=''>All</option>";
+
+                    const rows = irrTable.querySelectorAll('tbody tr');
+                    const values = [...new Set([...rows].map(row => row.children[colIndex].innerText))];
+                    values.forEach(v => {
+                        const opt = document.createElement('option');
+                        opt.value = v;
+                        opt.textContent = v;
+                        dropdown.appendChild(opt);
+                    });
+
+                    dropdown.onchange = applyIrrFilters;
+                    th.appendChild(dropdown);
+                });
+            }
+
+            function removeIrrFilters() {
+                irrTable?.querySelectorAll('thead th select').forEach(sel => sel.remove());
+                irrTable?.querySelectorAll('tbody tr').forEach(row => row.style.display = '');
+            }
+
+            function applyIrrFilters() {
+                const headers = irrTable.querySelectorAll('thead th select');
+                const rows = irrTable.querySelectorAll('tbody tr');
+
+                rows.forEach(row => {
+                    let visible = true;
+                    headers.forEach((dropdown, colIndex) => {
+                        if (dropdown?.value && row.children[colIndex].innerText !== dropdown.value) {
+                            visible = false;
+                        }
+                    });
+                    row.style.display = visible ? '' : 'none';
+                });
+            }
+
+            filterBtn?.addEventListener('click', () => {
+                addIrrFilters();
+                removeFilterBtn?.classList.remove('hidden');
+            });
+
+            removeFilterBtn?.addEventListener('click', () => {
+                removeIrrFilters();
+                removeFilterBtn?.classList.add('hidden');
+            });
+        }
+    </script>
+
+</body>
+
+</html>

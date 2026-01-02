@@ -5,467 +5,604 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="https://cdn.tailwindcss.com"></script>
-    <title>BLE Attendance System</title>
+    <title>BLE Attendance System - Modern</title>
     <style>
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        .animate-slide-in {
+            animation: slideIn 0.3s ease-out;
+        }
+        
         .col-filter-dropdown {
             min-width: 12rem;
             max-height: 18rem;
             overflow: auto;
         }
+        
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .nav-btn-active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
+        }
+        
+        .status-badge-p {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .status-badge-a {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; }
+            .glass-effect { background: white; border: 1px solid #e5e7eb; }
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
     </style>
 </head>
 
-<body class="bg-gray-100 min-h-screen">
+<body class="bg-gradient-to-br from-gray-50 via-purple-50 to-gray-100 min-h-screen">
 
     <!-- LOGIN SECTION -->
-    <section id="section-login" class="section min-h-screen flex items-center justify-center px-4">
-        <div class="w-full max-w-md bg-white shadow-xl rounded-2xl p-8">
-            <h1 class="text-2xl font-semibold text-center tracking-wide mb-10">BLE ATTENDANCE PORTAL</h1>
-            <p id="errorMsg" class="text-red-600 text-center mb-4 hidden">Invalid User ID or Password</p>
-            <form id="loginForm" class="space-y-6">
+    <section id="section-login" class="section min-h-screen flex items-center justify-center px-4 gradient-bg relative overflow-hidden">
+        <!-- Background decoration -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <div class="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+            <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div class="w-full max-w-md glass-effect shadow-2xl rounded-3xl p-10 animate-fade-in relative z-10">
+            <div class="text-center mb-8">
+                <div class="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
+                    <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">BLE Attendance Portal</h1>
+                <p class="text-gray-600">Sign in to access the system</p>
+            </div>
+            <p id="errorMsg" class="text-red-600 text-center mb-4 p-3 bg-red-50 rounded-lg hidden">
+                <span class="font-semibold">⚠️ Error:</span> Invalid User ID or Password
+            </p>
+            <form id="loginForm" class="space-y-5">
                 <div>
-                    <label class="block text-gray-700 font-medium mb-2" for="userid">USER ID</label>
-                    <input id="userid" type="text"
-                        class="w-full px-4 py-3 bg-gray-200 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition" />
+                    <label class="block text-gray-700 font-semibold mb-2" for="userid">User ID</label>
+                    <input id="userid" type="text" placeholder="Enter your user ID"
+                        class="w-full px-4 py-3 bg-white rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all" />
                 </div>
                 <div>
-                    <label class="block text-gray-700 font-medium mb-2" for="password">PASSWORD</label>
-                    <input id="password" type="password"
-                        class="w-full px-4 py-3 bg-gray-200 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition" />
+                    <label class="block text-gray-700 font-semibold mb-2" for="password">Password</label>
+                    <input id="password" type="password" placeholder="Enter your password"
+                        class="w-full px-4 py-3 bg-white rounded-xl border-2 border-gray-200 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all" />
                 </div>
                 <button type="submit"
-                    class="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold tracking-wide rounded-lg shadow-md transition">
-                    SIGN IN
+                    class="w-full py-4 gradient-bg text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200">
+                    Sign In
                 </button>
             </form>
         </div>
     </section>
 
-    <!-- APP CONTAINER (shown after login) -->
+    <!-- APP CONTAINER -->
     <div id="app-container" class="hidden">
 
         <!-- Top Nav -->
-        <header class="bg-white shadow sticky top-0 z-50">
-            <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-900">BLE Attendance & Surveillance</h1>
-                <nav class="flex gap-2 sm:gap-3">
-                    <button data-target="dashboard"
-                        class="nav-btn px-3 py-2 rounded bg-gray-200 hover:bg-gray-300">Dashboard</button>
-                    <button data-target="attendance"
-                        class="nav-btn px-3 py-2 rounded bg-gray-200 hover:bg-gray-300">Attendance</button>
-                    <button data-target="irregular"
-                        class="nav-btn px-3 py-2 rounded bg-gray-200 hover:bg-gray-300">Irregularities</button>
-                    <button id="logoutBtn" class="px-3 py-2 rounded bg-gray-300 hover:bg-gray-400">Logout</button>
-                </nav>
+        <header class="glass-effect shadow-md sticky top-0 z-50 no-print">
+            <div class="max-w-7xl mx-auto px-6 py-4">
+                <div class="flex items-center justify-between flex-wrap gap-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center shadow-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                        </div>
+                        <div>
+                            <h1 class="text-xl sm:text-2xl font-bold text-gray-900">BLE Attendance</h1>
+                            <p class="text-xs text-gray-500 hidden sm:block">Smart Campus Management System</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 flex-wrap">
+                        <div id="realtimeClock" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg shadow-sm">
+                            <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <span class="text-sm font-semibold text-gray-700"></span>
+                        </div>
+                        <nav class="flex gap-2">
+                            <button data-target="dashboard"
+                                class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:shadow-md bg-gray-100">
+                                <span class="hidden sm:inline">Dashboard</span>
+                                <span class="sm:hidden">📊</span>
+                            </button>
+                            <button data-target="attendance"
+                                class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:shadow-md bg-gray-100">
+                                <span class="hidden sm:inline">Attendance</span>
+                                <span class="sm:hidden">✓</span>
+                            </button>
+                            <button data-target="irregular"
+                                class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:shadow-md bg-gray-100">
+                                <span class="hidden sm:inline">Irregularities</span>
+                                <span class="sm:hidden">⚠️</span>
+                            </button>
+                            <button id="logoutBtn" class="px-4 py-2 rounded-lg bg-red-500 text-white font-medium text-sm hover:bg-red-600 transition-all duration-200 hover:shadow-md">
+                                Logout
+                            </button>
+                        </nav>
+                    </div>
+                </div>
             </div>
         </header>
 
-        <main class="max-w-7xl mx-auto p-6 space-y-8">
+        <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-8">
 
             <!-- DASHBOARD SECTION -->
             <section id="section-dashboard" class="section">
-                <div class="max-w-2xl mx-auto bg-white p-8 rounded-xl shadow-md space-y-8">
-                    <h2 class="text-2xl font-semibold">Dashboard</h2>
+                <div class="max-w-4xl mx-auto">
+                    <div class="glass-effect rounded-2xl p-6 sm:p-8 shadow-xl animate-fade-in">
+                        <div class="text-center mb-8">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-2">📊 Dashboard</h2>
+                            <p class="text-gray-600">Overview and quick access to records</p>
+                        </div>
 
-                    <!-- SHEET DROPDOWN -->
-                    <div>
-                        <label class="text-xl font-semibold text-gray-800">Sheet</label>
-                        <select id="sheetSelect" class="mt-2 block w-full border-b-2 border-purple-300 focus:border-purple-600 
-                         outline-none py-2 text-gray-700 bg-transparent text-lg">
-                            <option value="">Please select...</option>
-                            <option value="attendance">ATTENDANCE</option>
-                            <option value="irregular">IRREGULARITIES</option>
-                        </select>
-                    </div>
-
-                    <!-- DATE RANGE -->
-                    <div>
-                        <label class="text-xl font-semibold text-gray-800">Date Range</label>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
-                            <div>
-                                <label class="text-gray-700 font-medium">From Date</label>
-                                <input type="date" id="fromDate"
-                                    class="mt-2 w-full border border-gray-300 rounded px-4 py-2 text-gray-700 text-lg" />
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div id="statTotalStudents" class="text-3xl font-bold">2</div>
+                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    </svg>
+                                </div>
+                                <div class="text-sm opacity-90 font-medium">Total Students</div>
                             </div>
-                            <div>
-                                <label class="text-gray-700 font-medium">To Date</label>
-                                <input type="date" id="toDate"
-                                    class="mt-2 w-full border border-gray-300 rounded px-4 py-2 text-gray-700 text-lg" />
+                            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div id="statAttendanceRate" class="text-3xl font-bold">100%</div>
+                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    </svg>
+                                </div>
+                                <div class="text-sm opacity-90 font-medium">Attendance Rate</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div id="statIrregularities" class="text-3xl font-bold">0</div>
+                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    </svg>
+                                </div>
+                                <div class="text-sm opacity-90 font-medium">Irregularities</div>
+                            </div>
+                            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
+                                <div class="flex items-center justify-between mb-2">
+                                    <div id="statActiveSection" class="text-3xl font-bold">IT-B</div>
+                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    </svg>
+                                </div>
+                                <div class="text-sm opacity-90 font-medium">Active Section</div>
                             </div>
                         </div>
-                        <div class="mt-6">
-                            <button id="applyRangeBtn"
-                                class="w-full py-3 bg-green-600 text-white font-semibold rounded-lg text-lg hover:bg-green-700 transition">Apply</button>
+
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                            <!-- Sheet Selection -->
+                            <div class="bg-white rounded-xl p-6 shadow-md">
+                                <label class="block text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    Select Sheet
+                                </label>
+                                <select id="sheetSelect" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-gray-700 transition-all">
+                                    <option value="">Choose a sheet...</option>
+                                    <option value="attendance">📊 Attendance Records</option>
+                                    <option value="irregular">⚠️ Irregularities Report</option>
+                                </select>
+                            </div>
+
+                            <!-- Date Range -->
+                            <div class="bg-white rounded-xl p-6 shadow-md">
+                                <label class="block text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    </svg>
+                                    Date Range
+                                </label>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">From</label>
+                                        <input type="date" id="fromDate" max="2026-01-02"
+                                            class="w-full px-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all text-sm" />
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs text-gray-600 mb-1">To</label>
+                                        <input type="date" id="toDate" max="2026-01-02"
+                                            class="w-full px-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all text-sm" />
+                                    </div>
+                                </div>
+                            </div>
                         </div>
+
+                        <button id="applyRangeBtn"
+                            class="w-full mt-6 py-4 gradient-bg text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                            </svg>
+                            Apply & View Records
+                        </button>
                     </div>
                 </div>
             </section>
 
-            <!-- ATTENDANCE SECTION (embedded from attendance.html) -->
+            <!-- ATTENDANCE SECTION -->
             <section id="section-attendance" class="section hidden">
-                <div class="flex items-center justify-between mb-4">
-                    <div class="flex gap-3">
-                        <button id="toggleFiltersBtn"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700">FILTER</button>
-                        <button id="removeFiltersBtn"
-                            class="px-4 py-2 bg-red-500 text-white rounded-md shadow hover:bg-red-600">REMOVE
-                            FILTER</button>
+                <div class="animate-slide-in">
+                    <div class="flex items-center justify-between mb-6 flex-wrap gap-4 no-print">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">✓ Attendance Records</h2>
+                            <p class="text-gray-600 text-sm mt-1">Track and manage student attendance</p>
+                        </div>
+                        <div class="flex gap-2 sm:gap-3 flex-wrap">
+                            <button id="toggleFiltersBtn"
+                                class="px-4 sm:px-5 py-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200 font-medium text-sm">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                    </svg>
+                                    <span class="hidden sm:inline">Filter</span>
+                                </span>
+                            </button>
+                            <button id="removeFiltersBtn"
+                                class="px-4 sm:px-5 py-2.5 bg-red-500 text-white rounded-xl shadow-md hover:bg-red-600 hover:shadow-lg transition-all duration-200 font-medium text-sm">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    <span class="hidden sm:inline">Remove</span>
+                                </span>
+                            </button>
+                            <button onclick="window.print()"
+                                class="px-4 sm:px-5 py-2.5 bg-gray-700 text-white rounded-xl shadow-md hover:bg-gray-800 hover:shadow-lg transition-all duration-200 font-medium text-sm">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    <span class="hidden sm:inline">Print</span>
+                                </span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="flex gap-3">
-                        <button onclick="window.print()"
-                            class="px-4 py-2 bg-gray-300 rounded-md hover:bg-gray-400">PRINT</button>
-                    </div>
-                </div>
 
-                <div class="bg-white rounded-lg shadow overflow-x-auto">
-                    <table id="attendanceTable" class="min-w-full table-fixed text-sm">
-                        <thead class="bg-gray-50 border-b">
-                            <tr class="text-left">
-                                <th class="w-1/8 px-4 py-3 relative">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-medium">DATE</span>
-                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="0"
-                                            aria-label="Filter DATE">
-                                            <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor"
-                                                viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
-                                            <div class="text-sm font-semibold mb-2">Filter DATE</div>
-                                            <div class="filter-values space-y-2"></div>
-                                            <div class="mt-3 flex justify-between">
-                                                <button
-                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
-                                                <button
-                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table id="attendanceTable" class="min-w-full table-fixed text-sm">
+                                <thead class="gradient-bg text-white">
+                                    <tr class="text-left">
+                                        <th class="w-1/8 px-4 py-4 relative font-semibold">
+                                            <div class="flex items-center justify-between">
+                                                <span>DATE</span>
+                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="0">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                    </svg>
+                                                </button>
                                             </div>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th class="w-1/6 px-4 py-3 relative">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-medium">Name</span>
-                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="1"
-                                            aria-label="Filter Name">
-                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
-                                            <div class="text-sm font-semibold mb-2">Filter Name</div>
-                                            <div class="filter-values space-y-2"></div>
-                                            <div class="mt-3 flex justify-between">
-                                                <button
-                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
-                                                <button
-                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter DATE</div>
+                                                    <div class="filter-values space-y-2"></div>
+                                                    <div class="mt-3 flex justify-between">
+                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th class="w-1/8 px-4 py-3 relative">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-medium">Dept</span>
-                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="2"
-                                            aria-label="Filter Dept">
-                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
-                                            <div class="text-sm font-semibold mb-2">Filter Dept</div>
-                                            <div class="filter-values space-y-2"></div>
-                                            <div class="mt-3 flex justify-between">
-                                                <button
-                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
-                                                <button
-                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                        </th>
+                                        <th class="w-1/6 px-4 py-4 relative font-semibold">
+                                            <div class="flex items-center justify-between">
+                                                <span>Name</span>
+                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="1">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                    </svg>
+                                                </button>
                                             </div>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th class="w-1/10 px-4 py-3 relative">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-medium">ID</span>
-                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="3"
-                                            aria-label="Filter ID">
-                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
-                                            <div class="text-sm font-semibold mb-2">Filter ID</div>
-                                            <div class="filter-values space-y-2"></div>
-                                            <div class="mt-3 flex justify-between">
-                                                <button
-                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
-                                                <button
-                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Name</div>
+                                                    <div class="filter-values space-y-2"></div>
+                                                    <div class="mt-3 flex justify-between">
+                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th class="w-1/12 px-4 py-3 relative">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-medium">Year</span>
-                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="4"
-                                            aria-label="Filter Year">
-                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                                    d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
-                                            <div class="text-sm font-semibold mb-2">Filter Year</div>
-                                            <div class="filter-values space-y-2"></div>
-                                            <div class="mt-3 flex justify-between">
-                                                <button
-                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
-                                                <button
-                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                        </th>
+                                        <th class="w-1/8 px-4 py-4 relative font-semibold">
+                                            <div class="flex items-center justify-between">
+                                                <span>Dept</span>
+                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="2">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                    </svg>
+                                                </button>
                                             </div>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th class="w-1/10 px-4 py-3 relative">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-medium">PERIOD 1</span>
-                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="5"
-                                            aria-label="Filter Period 1">
-                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor">
-                                                <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
-                                            <div class="text-sm font-semibold mb-2">Filter Period 1</div>
-                                            <div class="filter-values space-y-2"></div>
-                                            <div class="mt-3 flex justify-between">
-                                                <button
-                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
-                                                <button
-                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Dept</div>
+                                                    <div class="filter-values space-y-2"></div>
+                                                    <div class="mt-3 flex justify-between">
+                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th class="w-1/10 px-4 py-3 relative">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-medium">PERIOD 2</span>
-                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="6"
-                                            aria-label="Filter Period 2">
-                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor">
-                                                <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
-                                            <div class="text-sm font-semibold mb-2">Filter Period 2</div>
-                                            <div class="filter-values space-y-2"></div>
-                                            <div class="mt-3 flex justify-between">
-                                                <button
-                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
-                                                <button
-                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                        </th>
+                                        <th class="w-1/10 px-4 py-4 relative font-semibold">
+                                            <div class="flex items-center justify-between">
+                                                <span>ID</span>
+                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="3">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                    </svg>
+                                                </button>
                                             </div>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th class="w-1/10 px-4 py-3 relative">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-medium">PERIOD 3</span>
-                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="7"
-                                            aria-label="Filter Period 3">
-                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor">
-                                                <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
-                                            <div class="text-sm font-semibold mb-2">Filter Period 3</div>
-                                            <div class="filter-values space-y-2"></div>
-                                            <div class="mt-3 flex justify-between">
-                                                <button
-                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
-                                                <button
-                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                            <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter ID</div>
+                                                    <div class="filter-values space-y-2"></div>
+                                                    <div class="mt-3 flex justify-between">
+                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                    </div>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </th>
-                                <th class="w-1/10 px-4 py-3 relative">
-                                    <div class="flex items-center justify-between">
-                                        <span class="font-medium">PERIOD 4</span>
-                                        <button class="filter-toggle hidden p-1 rounded hover:bg-gray-100" data-col="8"
-                                            aria-label="Filter Period 4">
-                                            <svg class="w-4 h-4 text-gray-600" viewBox="0 0 24 24" fill="none"
-                                                stroke="currentColor">
-                                                <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                        <div class="col-filter-dropdown bg-white border rounded-md shadow-lg p-3">
-                                            <div class="text-sm font-semibold mb-2">Filter Period 4</div>
-                                            <div class="filter-values space-y-2"></div>
-                                            <div class="mt-3 flex justify-between">
-                                                <button
-                                                    class="apply-btn px-3 py-1 bg-blue-600 text-white rounded text-sm">Apply</button>
-                                                <button
-                                                    class="clear-btn px-3 py-1 bg-gray-200 rounded text-sm">Clear</button>
+                                        </th>
+                                        <th class="w-1/12 px-4 py-4 relative font-semibold">
+                                            <div class="flex items-center justify-between">
+                                                <span>Year</span>
+                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="4">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                    </svg>
+                                                </button>
                                             </div>
-                                        </div>
-                                    </div>
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white">
-                            <tr class="border-b">
-                                <td class="px-4 py-3">2025-01-10</td>
-                                <td class="px-4 py-3">Gibson</td>
-                                <td class="px-4 py-3">ECE</td>
-                                <td class="px-4 py-3">101</td>
-                                <td class="px-4 py-3">1</td>
-                                <td class="px-4 py-3">P</td>
-                                <td class="px-4 py-3">A</td>
-                                <td class="px-4 py-3">P</td>
-                                <td class="px-4 py-3">A</td>
-                            </tr>
-                            <tr class="border-b">
-                                <td class="px-4 py-3">2025-01-11</td>
-                                <td class="px-4 py-3">Dharshini</td>
-                                <td class="px-4 py-3">CSE</td>
-                                <td class="px-4 py-3">102</td>
-                                <td class="px-4 py-3">3</td>
-                                <td class="px-4 py-3">A</td>
-                                <td class="px-4 py-3">A</td>
-                                <td class="px-4 py-3">P</td>
-                                <td class="px-4 py-3">P</td>
-                            </tr>
-                            <tr class="border-b">
-                                <td class="px-4 py-3">2025-01-12</td>
-                                <td class="px-4 py-3">Rohit</td>
-                                <td class="px-4 py-3">ECE</td>
-                                <td class="px-4 py-3">103</td>
-                                <td class="px-4 py-3">4</td>
-                                <td class="px-4 py-3">P</td>
-                                <td class="px-4 py-3">P</td>
-                                <td class="px-4 py-3">A</td>
-                                <td class="px-4 py-3">A</td>
-                            </tr>
-                            <tr class="border-b">
-                                <td class="px-4 py-3">2025-01-13</td>
-                                <td class="px-4 py-3">Asha</td>
-                                <td class="px-4 py-3">MECH</td>
-                                <td class="px-4 py-3">104</td>
-                                <td class="px-4 py-3">2</td>
-                                <td class="px-4 py-3">P</td>
-                                <td class="px-4 py-3">P</td>
-                                <td class="px-4 py-3">P</td>
-                                <td class="px-4 py-3">P</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                            <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Year</div>
+                                                    <div class="filter-values space-y-2"></div>
+                                                    <div class="mt-3 flex justify-between">
+                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th class="w-1/10 px-4 py-4 relative font-semibold">
+                                            <div class="flex items-center justify-between">
+                                                <span>PERIOD 1<br/><span class="text-xs font-normal opacity-90">8:15-10:15</span></span>
+                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="5">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Period 1</div>
+                                                    <div class="filter-values space-y-2"></div>
+                                                    <div class="mt-3 flex justify-between">
+                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th class="w-1/10 px-4 py-4 relative font-semibold">
+                                            <div class="flex items-center justify-between">
+                                                <span>PERIOD 2<br/><span class="text-xs font-normal opacity-90">10:30-12:45</span></span>
+                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="6">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Period 2</div>
+                                                    <div class="filter-values space-y-2"></div>
+                                                    <div class="mt-3 flex justify-between">
+                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </th>
+                                        <th class="w-1/10 px-4 py-4 relative font-semibold">
+                                            <div class="flex items-center justify-between">
+                                                <span>PERIOD 3<br/><span class="text-xs font-normal opacity-90">1:30-3:45</span></span>
+                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="7">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
+                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Period 3</div>
+                                                    <div class="filter-values space-y-2"></div>
+                                                    <div class="mt-3 flex justify-between">
+                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-100">
+                                    <tr class="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200">
+                                        <td class="px-4 py-4 text-gray-700 font-medium">02-01-2026</td>
+                                        <td class="px-4 py-4 font-semibold text-gray-900">Mathumitha R</td>
+                                        <td class="px-4 py-4 text-gray-700">IT-B</td>
+                                        <td class="px-4 py-4 text-gray-600 font-mono text-xs">310622205081</td>
+                                        <td class="px-4 py-4 text-gray-700">4</td>
+                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
+                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
+                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
+                                    </tr>
+                                    <tr class="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200">
+                                        <td class="px-4 py-4 text-gray-700 font-medium">02-01-2026</td>
+                                        <td class="px-4 py-4 font-semibold text-gray-900">Lipsa Sahoo</td>
+                                        <td class="px-4 py-4 text-gray-700">IT-B</td>
+                                        <td class="px-4 py-4 text-gray-600 font-mono text-xs">310622205075</td>
+                                        <td class="px-4 py-4 text-gray-700">4</td>
+                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
+                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
+                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </section>
 
-            <!-- IRREGULARITIES SECTION (embedded from IRREGULAR.html) -->
+            <!-- IRREGULARITIES SECTION -->
             <section id="section-irregular" class="section hidden">
-                <div class="flex gap-4 mb-4">
-                    <button id="filterBtn" class="px-5 py-2 bg-blue-600 text-white rounded">FILTER</button>
-                    <button id="removeFilterBtn" class="px-5 py-2 bg-gray-600 text-white rounded hidden">REMOVE
-                        FILTER</button>
-                    <button onclick="window.print()" class="px-5 py-2 bg-green-600 text-white rounded">PRINT</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table id="dataTable" class="min-w-full bg-white rounded shadow">
-                        <thead class="bg-gray-800 text-white">
-                            <tr>
-                                <th class="py-3 px-4 text-left relative">Date</th>
-                                <th class="py-3 px-4 text-left relative">Name</th>
-                                <th class="py-3 px-4 text-left relative">Dept</th>
-                                <th class="py-3 px-4 text-left relative">ID</th>
-                                <th class="py-3 px-4 text-left relative">Year</th>
-                                <th class="py-3 px-4 text-left relative">Time</th>
-                                <th class="py-3 px-4 text-left relative">Image</th>
-                            </tr>
-                        </thead>
-                        <tbody id="tableBody" class="text-gray-700">
-                            <tr data-date="2025-01-10">
-                                <td class="py-2 px-4">2025-01-10</td>
-                                <td class="py-2 px-4">Arun</td>
-                                <td class="py-2 px-4">ECE</td>
-                                <td class="py-2 px-4">101</td>
-                                <td class="py-2 px-4">1</td>
-                                <td class="py-2 px-4">09:10 AM</td>
-                                <td class="py-2 px-4"><img src="student_skipping_1.png" class="w-10 h-10 rounded" />
-                                </td>
-                            </tr>
-                            <tr data-date="2025-01-11">
-                                <td class="py-2 px-4">2025-01-11</td>
-                                <td class="py-2 px-4">Bala</td>
-                                <td class="py-2 px-4">CSE</td>
-                                <td class="py-2 px-4">103</td>
-                                <td class="py-2 px-4">2</td>
-                                <td class="py-2 px-4">09:12 AM</td>
-                                <td class="py-2 px-4"><img src="student_skipping_2.png" class="w-10 h-10 rounded" />
-                                </td>
-                            </tr>
-                            <tr data-date="2025-01-12">
-                                <td class="py-2 px-4">2025-01-12</td>
-                                <td class="py-2 px-4">Chitra</td>
-                                <td class="py-2 px-4">ECE</td>
-                                <td class="py-2 px-4">102</td>
-                                <td class="py-2 px-4">3</td>
-                                <td class="py-2 px-4">09:14 AM</td>
-                                <td class="py-2 px-4"><img src="student_skipping_3.png" class="w-10 h-10 rounded" />
-                                </td>
-                            </tr>
-                            <tr data-date="2025-01-13">
-                                <td class="py-2 px-4">2025-01-13</td>
-                                <td class="py-2 px-4">Daniel</td>
-                                <td class="py-2 px-4">MECH</td>
-                                <td class="py-2 px-4">104</td>
-                                <td class="py-2 px-4">4</td>
-                                <td class="py-2 px-4">09:16 AM</td>
-                                <td class="py-2 px-4"><img src="student_skipping_4.png" class="w-10 h-10 rounded" />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div class="animate-slide-in">
+                    <div class="flex items-center justify-between mb-6 flex-wrap gap-4 no-print">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">⚠️ Irregularities</h2>
+                            <p class="text-gray-600 text-sm mt-1">Monitor and track attendance irregularities</p>
+                        </div>
+                        <div class="flex gap-2 sm:gap-3 flex-wrap">
+                            <button id="filterBtn" class="px-4 sm:px-5 py-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200 font-medium text-sm">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                    </svg>
+                                    <span class="hidden sm:inline">Filter</span>
+                                </span>
+                            </button>
+                            <button id="removeFilterBtn" class="px-4 sm:px-5 py-2.5 bg-red-500 text-white rounded-xl shadow-md hover:bg-red-600 hover:shadow-lg transition-all duration-200 font-medium text-sm hidden">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                    </svg>
+                                    <span class="hidden sm:inline">Remove</span>
+                                </span>
+                            </button>
+                            <button onclick="window.print()" class="px-4 sm:px-5 py-2.5 bg-gray-700 text-white rounded-xl shadow-md hover:bg-gray-800 hover:shadow-lg transition-all duration-200 font-medium text-sm">
+                                <span class="flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                    </svg>
+                                    <span class="hidden sm:inline">Print</span>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table id="dataTable" class="min-w-full">
+                                <thead class="gradient-bg text-white">
+                                    <tr>
+                                        <th class="py-4 px-4 text-left font-semibold relative">Date</th>
+                                        <th class="py-4 px-4 text-left font-semibold relative">Name</th>
+                                        <th class="py-4 px-4 text-left font-semibold relative">Dept</th>
+                                        <th class="py-4 px-4 text-left font-semibold relative">ID</th>
+                                        <th class="py-4 px-4 text-left font-semibold relative">Year</th>
+                                        <th class="py-4 px-4 text-left font-semibold relative">Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tableBody" class="divide-y divide-gray-100">
+                                    <tr>
+                                        <td colspan="6" class="py-16 text-center">
+                                            <div class="flex flex-col items-center justify-center">
+                                                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                    </svg>
+                                                </div>
+                                                <p class="text-lg font-semibold text-gray-700 mb-2">No Irregularities Recorded</p>
+                                                <p class="text-sm text-gray-500">All students are following the attendance policy ✓</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </section>
 
         </main>
     </div>
 
-    <!-- OPTIMIZED COMBINED SCRIPTS -->
+    <!-- SCRIPTS -->
     <script>
+        // ============================================
+        // API CONFIGURATION - UPDATE THIS URL!
+        // ============================================
+        // Deploy your backend to Vercel and update this URL
+        // Example: https://your-project-name.vercel.app/api/attendance
+        const API_BASE_URL = 'https://ble-attendance-api.vercel.app';
+        const ATTENDANCE_API = `${API_BASE_URL}/api/attendance`;
+        const STUDENTS_API = `${API_BASE_URL}/api/students`;
+        
+        // Auto-refresh interval (in milliseconds) - 60 seconds
+        const AUTO_REFRESH_INTERVAL = 60000;
+        let refreshTimer = null;
+
         // Login validation
         const loginForm = document.getElementById('loginForm');
         const errorMsg = document.getElementById('errorMsg');
@@ -499,7 +636,26 @@
             errorMsg.classList.add('hidden');
         });
 
-        // SPA routing - cached elements
+        // Real-time clock
+        function updateClock() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            
+            const clockElement = document.getElementById('realtimeClock');
+            if (clockElement) {
+                clockElement.querySelector('span').textContent = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
+            }
+        }
+        
+        updateClock();
+        setInterval(updateClock, 1000);
+
+        // SPA routing
         const sectionMap = {
             dashboard: document.getElementById('section-dashboard'),
             attendance: document.getElementById('section-attendance'),
@@ -507,7 +663,6 @@
         };
         const navBtns = document.querySelectorAll('.nav-btn');
 
-        // lazy init flags
         let attendanceInitialized = false;
         let irregularInitialized = false;
 
@@ -516,9 +671,20 @@
                 if (!el) return;
                 el.classList.toggle('hidden', k !== key);
             });
+            
+            // Update nav button styles
+            navBtns.forEach(btn => {
+                if (btn.getAttribute('data-target') === key) {
+                    btn.classList.add('nav-btn-active');
+                    btn.classList.remove('bg-gray-100');
+                } else {
+                    btn.classList.remove('nav-btn-active');
+                    btn.classList.add('bg-gray-100');
+                }
+            });
+            
             if (key) location.hash = key;
 
-            // lazy initialize per section once
             if (key === 'attendance' && !attendanceInitialized) {
                 initAttendanceFilters();
                 attendanceInitialized = true;
@@ -527,26 +693,32 @@
                 initIrregularFilters();
                 irregularInitialized = true;
             }
+            
+            // Fetch data when entering attendance section
+            if (key === 'attendance') {
+                fetchAttendanceData();
+            }
+            if (key === 'irregular') {
+                fetchIrregularitiesData();
+            }
         }
 
         navBtns.forEach(btn => {
             btn.addEventListener('click', () => showSection(btn.getAttribute('data-target')));
         });
 
-        // handle hash changes for deep linking
         window.addEventListener('hashchange', () => {
             const k = (location.hash || '#dashboard').replace('#', '');
             showSection(k);
         });
 
-        // Dashboard: jump to selected sheet
         document.getElementById('applyRangeBtn')?.addEventListener('click', () => {
             const value = document.getElementById('sheetSelect')?.value;
             if (value === 'attendance') showSection('attendance');
             else if (value === 'irregular') showSection('irregular');
         });
 
-        // Attendance filters: initialized when section first shown
+        // Attendance filters
         function initAttendanceFilters() {
             const toggleBtn = document.getElementById('toggleFiltersBtn');
             const removeBtn = document.getElementById('removeFiltersBtn');
@@ -596,12 +768,17 @@
 
                 tbody.querySelectorAll('tr').forEach(row => {
                     if (!row.children[colIndex]) return;
-                    values.add(row.children[colIndex].textContent.trim());
+                    const cellText = row.children[colIndex].textContent.trim();
+                    values.add(cellText);
                 });
 
                 const arr = Array.from(values).sort((a, b) => {
-                    const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
-                    if (dateRegex.test(a) && dateRegex.test(b)) return new Date(a) - new Date(b);
+                    const dateRegex = /^\d{2}-\d{2}-\d{4}$/;
+                    if (dateRegex.test(a) && dateRegex.test(b)) {
+                        const [d1, m1, y1] = a.split('-');
+                        const [d2, m2, y2] = b.split('-');
+                        return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2);
+                    }
                     const na = Number(a), nb = Number(b);
                     if (!isNaN(na) && !isNaN(nb)) return na - nb;
                     return String(a).localeCompare(String(b));
@@ -613,9 +790,9 @@
                     const wrapper = document.createElement('div');
                     wrapper.className = 'flex items-center gap-2';
                     wrapper.innerHTML = `
-            <input type="checkbox" id="${safeId}" class="chk-val" data-col="${colIndex}" value="${val}" ${isChecked ? 'checked' : ''} />
-            <label for="${safeId}" class="text-sm">${val}</label>
-          `;
+                        <input type="checkbox" id="${safeId}" class="chk-val rounded border-gray-300 text-purple-600 focus:ring-purple-500" data-col="${colIndex}" value="${val}" ${isChecked ? 'checked' : ''} />
+                        <label for="${safeId}" class="text-sm cursor-pointer hover:text-purple-600">${val}</label>
+                    `;
                     container.appendChild(wrapper);
                 });
 
@@ -642,7 +819,8 @@
                         const col = Number(k);
                         const sel = activeFilters[k];
                         if (!sel || sel.length === 0) continue;
-                        if (!row.children[col] || !sel.includes(row.children[col].textContent.trim())) {
+                        const cellText = row.children[col]?.textContent.trim();
+                        if (!cellText || !sel.includes(cellText)) {
                             show = false;
                             break;
                         }
@@ -659,7 +837,7 @@
             updateFilterToggleVisibility();
         }
 
-        // Irregularities filters: initialized when section first shown
+        // Irregularities filters
         function initIrregularFilters() {
             const irrTable = document.getElementById('dataTable');
             const filterBtn = document.getElementById('filterBtn');
@@ -668,11 +846,11 @@
             function addIrrFilters() {
                 irrTable?.querySelectorAll('thead th').forEach((th, colIndex) => {
                     const dropdown = document.createElement('select');
-                    dropdown.className = 'absolute right-2 top-1/2 -translate-y-1/2 bg-white text-black border px-1 py-0.5 rounded shadow';
+                    dropdown.className = 'absolute right-2 top-1/2 -translate-y-1/2 bg-white text-gray-700 border-2 border-white/20 rounded-lg px-2 py-1 text-sm shadow-md hover:shadow-lg transition';
                     dropdown.innerHTML = "<option value=''>All</option>";
 
                     const rows = irrTable.querySelectorAll('tbody tr');
-                    const values = [...new Set([...rows].map(row => row.children[colIndex].innerText))];
+                    const values = [...new Set([...rows].map(row => row.children[colIndex]?.innerText).filter(Boolean))];
                     values.forEach(v => {
                         const opt = document.createElement('option');
                         opt.value = v;
@@ -697,7 +875,7 @@
                 rows.forEach(row => {
                     let visible = true;
                     headers.forEach((dropdown, colIndex) => {
-                        if (dropdown?.value && row.children[colIndex].innerText !== dropdown.value) {
+                        if (dropdown?.value && row.children[colIndex]?.innerText !== dropdown.value) {
                             visible = false;
                         }
                     });
@@ -715,6 +893,206 @@
                 removeFilterBtn?.classList.add('hidden');
             });
         }
+
+        // ============================================
+        // API DATA FETCHING FUNCTIONS
+        // ============================================
+        
+        // Fetch attendance data from API
+        async function fetchAttendanceData() {
+            const tbody = document.querySelector('#attendanceTable tbody');
+            if (!tbody) return;
+            
+            // Show loading state
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="8" class="py-8 text-center">
+                        <div class="flex flex-col items-center">
+                            <div class="w-8 h-8 border-4 border-purple-600 border-t-transparent rounded-full animate-spin mb-3"></div>
+                            <p class="text-gray-600">Loading attendance data...</p>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            
+            try {
+                const response = await fetch(ATTENDANCE_API);
+                if (!response.ok) throw new Error('API request failed');
+                
+                const data = await response.json();
+                
+                if (!data || data.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="8" class="py-8 text-center">
+                                <p class="text-gray-500">No attendance records found</p>
+                                <p class="text-sm text-gray-400 mt-1">Data will appear here when ESP32 sends updates</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                // Clear and populate table
+                tbody.innerHTML = '';
+                data.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200';
+                    
+                    // Determine period statuses
+                    const p1Status = record.period1 || (record.period === 1 ? record.status : '-');
+                    const p2Status = record.period2 || (record.period === 2 ? record.status : '-');
+                    const p3Status = record.period3 || (record.period === 3 ? record.status : '-');
+                    
+                    row.innerHTML = `
+                        <td class="px-4 py-4 text-gray-700 font-medium">${record.date || '-'}</td>
+                        <td class="px-4 py-4 font-semibold text-gray-900">${record.name || '-'}</td>
+                        <td class="px-4 py-4 text-gray-700">${record.department || '-'}</td>
+                        <td class="px-4 py-4 text-gray-600 font-mono text-xs">${record.rollNumber || '-'}</td>
+                        <td class="px-4 py-4 text-gray-700">${record.year || '-'}</td>
+                        <td class="px-4 py-4">${getStatusBadge(p1Status)}</td>
+                        <td class="px-4 py-4">${getStatusBadge(p2Status)}</td>
+                        <td class="px-4 py-4">${getStatusBadge(p3Status)}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                // Update dashboard stats
+                updateDashboardStats(data);
+                
+            } catch (error) {
+                console.error('Error fetching attendance:', error);
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="py-8 text-center">
+                            <div class="flex flex-col items-center">
+                                <svg class="w-12 h-12 text-red-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <p class="text-red-600 font-semibold">Failed to load data</p>
+                                <p class="text-sm text-gray-500 mt-1">Check API connection or try again</p>
+                                <button onclick="fetchAttendanceData()" class="mt-3 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition">
+                                    Retry
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+        
+        // Fetch irregularities data from API
+        async function fetchIrregularitiesData() {
+            const tbody = document.querySelector('#dataTable tbody');
+            if (!tbody) return;
+            
+            try {
+                const response = await fetch(`${ATTENDANCE_API}?irregularities=true`);
+                if (!response.ok) throw new Error('API request failed');
+                
+                const data = await response.json();
+                const irregularities = data.filter(r => r.status === 'Absent' || r.irregularity);
+                
+                if (!irregularities || irregularities.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="py-16 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-lg font-semibold text-gray-700 mb-2">No Irregularities Recorded</p>
+                                    <p class="text-sm text-gray-500">All students are following the attendance policy ✓</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+                
+                tbody.innerHTML = '';
+                irregularities.forEach(record => {
+                    const row = document.createElement('tr');
+                    row.className = 'hover:bg-red-50 transition-all duration-200';
+                    row.innerHTML = `
+                        <td class="py-4 px-4 text-gray-700">${record.date || '-'}</td>
+                        <td class="py-4 px-4 font-semibold text-gray-900">${record.name || '-'}</td>
+                        <td class="py-4 px-4 text-gray-700">${record.department || '-'}</td>
+                        <td class="py-4 px-4 text-gray-600 font-mono text-xs">${record.rollNumber || '-'}</td>
+                        <td class="py-4 px-4 text-gray-700">${record.year || '-'}</td>
+                        <td class="py-4 px-4 text-gray-700">${record.time || '-'}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+            } catch (error) {
+                console.error('Error fetching irregularities:', error);
+            }
+        }
+        
+        // Generate status badge HTML
+        function getStatusBadge(status) {
+            if (!status || status === '-') {
+                return '<span class="text-gray-400">-</span>';
+            }
+            const isPresent = status === 'Present' || status === 'P' || status.includes('P');
+            if (isPresent) {
+                return '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span>';
+            }
+            return '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-a shadow-sm">✗ A</span>';
+        }
+        
+        // Update dashboard statistics
+        function updateDashboardStats(data) {
+            if (!data || data.length === 0) return;
+            
+            // Get unique students
+            const uniqueStudents = new Set(data.map(r => r.studentId || r.rollNumber));
+            const totalStudents = uniqueStudents.size || 2;
+            
+            // Calculate attendance rate
+            const presentRecords = data.filter(r => r.status === 'Present').length;
+            const totalRecords = data.length;
+            const attendanceRate = totalRecords > 0 ? Math.round((presentRecords / totalRecords) * 100) : 100;
+            
+            // Count irregularities
+            const irregularities = data.filter(r => r.status === 'Absent').length;
+            
+            // Get department from first record
+            const department = data[0]?.department || 'IT-B';
+            
+            // Update dashboard cards
+            const statTotalStudents = document.getElementById('statTotalStudents');
+            const statAttendanceRate = document.getElementById('statAttendanceRate');
+            const statIrregularities = document.getElementById('statIrregularities');
+            const statActiveSection = document.getElementById('statActiveSection');
+            
+            if (statTotalStudents) statTotalStudents.textContent = totalStudents;
+            if (statAttendanceRate) statAttendanceRate.textContent = attendanceRate + '%';
+            if (statIrregularities) statIrregularities.textContent = irregularities;
+            if (statActiveSection) statActiveSection.textContent = department;
+        }
+        
+        // Auto-refresh data
+        function startAutoRefresh() {
+            if (refreshTimer) clearInterval(refreshTimer);
+            refreshTimer = setInterval(() => {
+                const currentSection = location.hash.replace('#', '') || 'dashboard';
+                if (currentSection === 'attendance') {
+                    fetchAttendanceData();
+                } else if (currentSection === 'irregular') {
+                    fetchIrregularitiesData();
+                }
+            }, AUTO_REFRESH_INTERVAL);
+        }
+        
+        // Start auto-refresh when logged in
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            // After successful login, start auto-refresh
+            setTimeout(startAutoRefresh, 100);
+        });
     </script>
 
 </body>
