@@ -5,12 +5,6 @@
       "runtime": "@vercel/node@3.x"
     }
   },
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    }
-  ],
   "headers": [
     {
       "source": "/api/(.*)",
