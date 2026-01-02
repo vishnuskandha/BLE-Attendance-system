@@ -21,7 +21,7 @@
 // ---------- CONFIGURE THESE ----------
 const char* WIFI_SSID     = "YOUR_WIFI_SSID";
 const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
-const char* SERVER_URL    = "http://YOUR_SERVER_IP:3000/api/attendance"; // POST endpoint
+const char* SERVER_URL    = "https://ble-attendance-system-pink.vercel.app/api/attendance";
 const char* LOCATION_ID   = "CLASSROOM_A";
 const char* DEPARTMENT    = "IT-B";
 
@@ -66,7 +66,15 @@ Period periods[] = {
 const int PERIOD_COUNT = sizeof(periods) / sizeof(periods[0]);
 
 // ---------- GLOBALS ----------
-BLEScan* pBLESRTC SETUP ----------
+BLEScan* pBLEScan;
+RTC_DS3231 rtc;
+WebServer server(80);
+bool wifiReady = false;
+bool rtcReady = false;
+String detected[64];
+int detectedCount = 0;
+
+// ---------- RTC SETUP ----------
 void setupRTC() {
   Wire.begin(RTC_SDA, RTC_SCL);
   if (!rtc.begin()) {
@@ -77,12 +85,29 @@ void setupRTC() {
   
   if (rtc.lostPower()) {
     Serial.println("RTC lost power, setting time...");
-    // Set to compile time
     rtc.adjust(DateTime(F(__DATE__), F(__TIME__)));
   }
   
   rtcReady = true;
   Serial.println("RTC initialized");
+}
+
+// ---------- WIFI ----------
+void connectWiFi() {
+  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
+  Serial.print("Connecting to WiFi");
+  for (int i = 0; i < 30 && WiFi.status() != WL_CONNECTED; i++) {
+    delay(500);
+    Serial.print(".");
+  }
+  wifiReady = WiFi.status() == WL_CONNECTED;
+  if (wifiReady) {
+    Serial.println("\nWiFi connected!");
+    Serial.print("IP Address: ");
+    Serial.println(WiFi.localIP());
+  } else {
+    Serial.println("\nWiFi connection failed!");
+  }
 }
 
 // ---------- TIME HELPERS ----------
@@ -97,7 +122,45 @@ String getDateStr() {
 String getTimeStr() {
   if (!rtcReady) return "09:00 AM";
   DateTime now = rtc.now();
-  int h = now.hour();bool present, bool onDuty = false) {
+  int h = now.hour();
+  String ampm = h >= 12 ? "PM" : "AM";
+  if (h > 12) h -= 12;
+  if (h == 0) h = 12;
+  char buf[16];
+  sprintf(buf, "%02d:%02d %s", h, now.minute(), ampm.c_str());
+  return String(buf);
+}
+
+int getCurrentPeriod() {
+  if (!rtcReady) return 0;
+  DateTime now = rtc.now();
+  int currentMin = now.hour() * 60 + now.minute();
+  
+  for (int i = 0; i < PERIOD_COUNT; i++) {
+    int startMin = periods[i].startHour * 60 + periods[i].startMin;
+    int endMin = periods[i].endHour * 60 + periods[i].endMin;
+    if (currentMin >= startMin && currentMin < endMin) {
+      return i + 1;
+    }
+  }
+  return 0;
+}
+
+bool isOnDutyActive(StudentBeacon& student) {
+  if (!student.onDuty) return false;
+  if (!rtcReady) return student.onDuty;
+  
+  DateTime now = rtc.now();
+  if (now.unixtime() > student.onDutyUntil) {
+    student.onDuty = false;
+    student.onDutyUntil = 0;
+    return false;
+  }
+  return true;
+}
+
+// ---------- SEND ATTENDANCE ----------
+void sendAttendance(const StudentBeacon& s, bool present, bool onDuty) {
   if (!wifiReady || WiFi.status() != WL_CONNECTED) {
     Serial.println("WiFi not ready, skip send");
     return;
@@ -109,7 +172,7 @@ String getTimeStr() {
 
   StaticJsonDocument<512> doc;
   doc["studentId"] = s.id;
-  doc["code"] = String(s.id) + (present ? "P" : "A"); // e.g., "1P" or "2A"
+  doc["code"] = String(s.id) + (present ? "P" : "A");
   doc["name"] = s.name;
   doc["rollNumber"] = s.roll;
   doc["year"] = s.year;
@@ -117,13 +180,25 @@ String getTimeStr() {
   doc["location"] = LOCATION_ID;
   doc["status"] = present ? "Present" : "Absent";
   doc["onDuty"] = onDuty;
-  doc["period"] = getCurrentPeriod()< PERIOD_COUNT; i++) {
-    int startMin = periods[i].startHour * 60 + periods[i].startMin;
-    int endMin = periods[i].endHour * 60 + periods[i].endMin;
-    if (currentMin >= startMin && currentMin < endMin) {
-      return i + 1; // Return period number (1, 2, 3)
-    }
-  }WEB SERVER HANDLERS ----------
+  doc["period"] = getCurrentPeriod();
+  doc["date"] = getDateStr();
+  doc["time"] = getTimeStr();
+
+  String body;
+  serializeJson(doc, body);
+  
+  int code = http.POST(body);
+  Serial.printf("POST %d: %s\n", code, s.name.c_str());
+  
+  if (code > 0) {
+    String response = http.getString();
+    Serial.println("Response: " + response);
+  }
+  
+  http.end();
+}
+
+// ---------- WEB SERVER HANDLERS ----------
 void handleRoot() {
   String html = R"(
 <!DOCTYPE html>
@@ -133,19 +208,21 @@ void handleRoot() {
   <meta name='viewport' content='width=device-width, initial-scale=1.0'>
   <title>Attendance Permission Portal</title>
   <style>
-    body { font-family: Arial; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
+    body { font-family: Arial; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; }
     .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
     h1 { color: #667eea; text-align: center; }
     .student { background: #f9f9f9; padding: 15px; margin: 10px 0; border-radius: 8px; border-left: 4px solid #667eea; }
-    select, input { width: 100%; padding: 10px; margin: 5px 0; border: 2px solid #ddd; border-radius: 5px; }
-    button { background: #667eea; color: white; padding: 12px 30px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; margin-top: 10px; }
-    button:hover { background: #764ba2; }
-    .info { color: #666; font-size: 14px; margin-top: 5px; }
+    select, input { width: 100%; padding: 12px; margin: 5px 0; border: 2px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+    button { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 30px; border: none; border-radius: 8px; cursor: pointer; width: 100%; font-size: 16px; margin-top: 15px; }
+    button:hover { opacity: 0.9; transform: scale(1.02); }
+    .info { color: #666; font-size: 14px; margin-top: 5px; text-align: center; }
+    .status-on { color: #10b981; font-weight: bold; }
+    .status-off { color: #6b7280; }
   </style>
 </head>
 <body>
   <div class='container'>
-    <h1>📋 Attendance Permission Portal</h1>
+    <h1>📋 Permission Portal</h1>
     <p class='info'>Grant on-duty or permission for students</p>
     
     <form method='POST' action='/grant'>
@@ -165,37 +242,38 @@ void handleRoot() {
       
       <div class='student'>
         <h3>Permission Type:</h3>
-        <select name='type' required onchange='updateDuration(this.value)'>
+        <select name='type' id='typeSelect' required onchange='updateDuration(this.value)'>
           <option value=''>-- Choose Type --</option>
-          <option value='period'>Single Period</option>
-          <option value='halfday'>Half Day</option>
-          <option value='fullday'>Full Day</option>
+          <option value='period'>Single Period (2 hrs)</option>
+          <option value='halfday'>Half Day (4 hrs)</option>
+          <option value='fullday'>Full Day (8 hrs)</option>
           <option value='custom'>Custom Duration</option>
         </select>
       </div>
       
       <div class='student' id='customTime' style='display:none;'>
         <h3>Duration (minutes):</h3>
-        <input type='number' name='duration' id='durationInput' min='1' max='480' value='60'>
+        <input type='number' name='duration' id='durationInput' min='1' max='480' value='120'>
       </div>
       
       <button type='submit'>✓ Grant Permission</button>
     </form>
     
-    <hr style='margin: 30px 0;'>
-    <h3>Current Status:</h3>
+    <hr style='margin: 30px 0; border: 1px solid #eee;'>
+    <h3>📊 Current Status:</h3>
 )";
 
   for (int i = 0; i < REG_COUNT; i++) {
     html += "<div class='student'><strong>" + registry[i].name + ":</strong> ";
     if (registry[i].onDuty) {
-      html += "<span style='color: green;'>✓ ON DUTY</span>";
+      html += "<span class='status-on'>✓ ON DUTY</span>";
     } else {
-      html += "<span style='color: gray;'>Normal</span>";
+      html += "<span class='status-off'>Normal</span>";
     }
     html += "</div>";
   }
 
+  html += "<p class='info' style='margin-top: 20px;'>Current Time: " + getTimeStr() + " | Date: " + getDateStr() + "</p>";
   html += R"(
   </div>
   <script>
@@ -210,7 +288,99 @@ void handleRoot() {
         else if (type === 'halfday') input.value = '240';
         else if (type === 'fullday') input.value = '480';
       }
-    }=== ESP32 BLE Attendance with RTC ===");
+    }
+  </script>
+</body>
+</html>
+)";
+  
+  server.send(200, "text/html", html);
+}
+
+void handleGrant() {
+  if (server.hasArg("studentId") && server.hasArg("type")) {
+    int studentId = server.arg("studentId").toInt();
+    String type = server.arg("type");
+    int duration = server.arg("duration").toInt();
+    
+    // Set duration based on type
+    if (type == "period") duration = 120;
+    else if (type == "halfday") duration = 240;
+    else if (type == "fullday") duration = 480;
+    
+    for (int i = 0; i < REG_COUNT; i++) {
+      if (registry[i].id == studentId) {
+        DateTime now = rtc.now();
+        registry[i].onDuty = true;
+        registry[i].onDutyUntil = now.unixtime() + (duration * 60);
+        
+        Serial.printf("Permission granted: %s for %d minutes\n", registry[i].name.c_str(), duration);
+        
+        String html = R"(
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset='UTF-8'>
+  <meta name='viewport' content='width=device-width, initial-scale=1.0'>
+  <title>Permission Granted</title>
+  <style>
+    body { font-family: Arial; text-align: center; padding: 50px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; margin: 0; }
+    .card { background: white; padding: 40px; border-radius: 15px; max-width: 400px; margin: 0 auto; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+    h1 { color: #10b981; }
+    a { display: inline-block; margin-top: 20px; padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; text-decoration: none; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div class='card'>
+    <h1>✓ Permission Granted</h1>
+    <p><strong>)" + registry[i].name + R"(</strong></p>
+    <p>Marked on-duty for <strong>)" + String(duration) + R"( minutes</strong></p>
+    <a href='/'>← Back to Portal</a>
+  </div>
+</body>
+</html>
+)";
+        server.send(200, "text/html", html);
+        return;
+      }
+    }
+  }
+  server.send(400, "text/html", "<h1>Error: Invalid request</h1><a href='/'>Back</a>");
+}
+
+// ---------- BLE CALLBACK ----------
+class AdvCallbacks : public BLEAdvertisedDeviceCallbacks {
+  void onResult(BLEAdvertisedDevice dev) {
+    String mac = dev.getAddress().toString().c_str();
+    mac.toUpperCase();
+    int rssi = dev.getRSSI();
+    
+    if (rssi < RSSI_THRESHOLD) return;
+
+    for (int i = 0; i < REG_COUNT; i++) {
+      if (mac == registry[i].mac) {
+        bool seen = false;
+        for (int j = 0; j < detectedCount; j++) {
+          if (detected[j] == mac) {
+            seen = true;
+            break;
+          }
+        }
+        if (!seen && detectedCount < 64) {
+          detected[detectedCount++] = mac;
+          Serial.printf("✓ Beacon: %s (ID:%d) RSSI:%d\n", registry[i].name.c_str(), registry[i].id, rssi);
+        }
+        break;
+      }
+    }
+  }
+};
+
+// ---------- SETUP ----------
+void setup() {
+  Serial.begin(115200);
+  Serial.println("\n=== ESP32 BLE Attendance System ===");
+  Serial.println("Version 1.0 | API: ble-attendance-system-pink.vercel.app");
 
   // Setup RTC
   setupRTC();
@@ -223,7 +393,25 @@ void handleRoot() {
     server.on("/", handleRoot);
     server.on("/grant", HTTP_POST, handleGrant);
     server.begin();
-    Serial.println("Web server started at: http://" + WiFi.localIP().toString());
+    Serial.println("Web server started!");
+    Serial.print("Permission Portal: http://");
+    Serial.println(WiFi.localIP());
+  }
+  
+  // Setup BLE
+  BLEDevice::init("ESP32_Attendance");
+  pBLEScan = BLEDevice::getScan();
+  pBLEScan->setAdvertisedDeviceCallbacks(new AdvCallbacks());
+  pBLEScan->setActiveScan(true);
+  pBLEScan->setInterval(100);
+  pBLEScan->setWindow(80);
+  
+  Serial.println("\n✓ System ready!");
+  Serial.println("Scanning every 1 minute...\n");
+}
+
+// ---------- LOOP ----------
+void loop() {
   // Handle web server requests
   server.handleClient();
   
@@ -232,15 +420,19 @@ void handleRoot() {
   if (millis() - lastScan >= SCAN_INTERVAL) {
     lastScan = millis();
     
-    Serial.printf("\n=== Scan #%lu at %s ===\n", millis()/1000, getTimeStr().c_str());
-    Serial.printf("Current Period: %d\n", getCurrentPeriod());
+    Serial.println("\n========================================");
+    Serial.printf("Scan at %s | Period: %d\n", getTimeStr().c_str(), getCurrentPeriod());
+    Serial.println("========================================");
     
     // Reset detection tracking
     detectedCount = 0;
     
     // Perform BLE scan
+    Serial.println("Scanning for beacons...");
     pBLEScan->start(SCAN_DURATION, false);
     pBLEScan->clearResults();
+    
+    Serial.printf("Found %d beacon(s)\n\n", detectedCount);
     
     // Process attendance for all students
     for (int i = 0; i < REG_COUNT; i++) {
@@ -257,165 +449,22 @@ void handleRoot() {
       // Check on-duty status
       bool onDuty = isOnDutyActive(registry[i]);
       
-      // Determine if present
+      // Determine if present (beacon OR on-duty)
       bool isPresent = beaconDetected || onDuty;
       
-      // Send attendance data
+      // Log status
       String statusCode = String(registry[i].id) + (isPresent ? "P" : "A");
-      Serial.printf("Student %d (%s): %s %s\n", 
-                    registry[i].id, 
-                    registry[i].name.c_str(), 
-                    statusCode.c_str(),
-                    onDuty ? "[ON-DUTY]" : "");
+      Serial.printf("[%s] %s: %s", statusCode.c_str(), registry[i].name.c_str(), isPresent ? "PRESENT" : "ABSENT");
+      if (onDuty) Serial.print(" (ON-DUTY)");
+      if (beaconDetected) Serial.print(" (BEACON)");
+      Serial.println();
       
+      // Send attendance data to server
       sendAttendance(registry[i], isPresent, onDuty);
     }
     
-    Serial.println("=== Scan complete ===");
+    Serial.println("\n✓ Scan complete - next in 1 minute");
   }
   
-  delay(100); // Small delay to prevent watchdog issuesedDeviceCallbacks(new AdvCallbacks());
-  pBLEScan->setActiveScan(true);
-  pBLEScan->setInterval(100);
-  pBLEScan->setWindow(80);
-  
-  Serial.println("System ready!"
-  if (server.hasArg("studentId") && server.hasArg("type")) {
-    int studentId = server.arg("studentId").toInt();
-    String type = server.arg("type");
-    int duration = server.arg("duration").toInt();
-    
-    for (int i = 0; i < REG_COUNT; i++) {
-      if (registry[i].id == studentId) {
-        DateTime now = rtc.now();
-        registry[i].onDuty = true;
-        registry[i].onDutyUntil = now.unixtime() + (duration * 60);
-        
-        Serial.printf("Permission granted: %s for %d minutes\n", registry[i].name.c_str(), duration);
-        
-        String html = "<html><body style='font-family:Arial;text-align:center;padding:50px;'>";
-        html += "<h1 style='color:green;'>✓ Permission Granted</h1>";
-        html += "<p>" + registry[i].name + " marked on-duty for " + String(duration) + " minutes</p>";
-        html += "<a href='/' style='display:inline-block;margin-top:20px;padding:10px 20px;background:#667eea;color:white;text-decoration:none;border-radius:5px;'>Back</a>";
-        html += "</body></html>";
-        
-        server.send(200, "text/html", html);
-        return;
-      }
-    }
-  }
-  server.send(400, "text/html", "<h1>Error: Invalid request</h1><a href='/'>Back</a>");
-}
-
-// ---------- BLE CALLBACK ----------
-class AdvCallbacks : public BLEAdvertisedDeviceCallbacks {
-  void onResult(BLEAdvertisedDevice dev) {
-    String mac = dev.getAddress().toString().c_str();
-    mac.toUpperCase();
-    int rssi = dev.getRSSI();
-    if (rssi < RSSI_THRESHOLD) return;
-
-    for (int i = 0; i < REG_COUNT; i++) {
-      if (mac == registry[i].mac) {
-        bool seen = false;
-        for (int j = 0; j < detectedCount; j++) if (detected[j] == mac) seen = true;
-        if (!seen && detectedCount < 64) {
-          detected[detectedCount++] = mac;
-          Serial.printf("Beacon detected: %s (ID:%d) RSSI:%d\n", registry[i].name.c_str(), registry[i].id
-DateTime lastScanTime;
-
-// ---------- WIFI ----------
-void connectWiFi() {
-  WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-  Serial.print("Connecting to WiFi");
-  for (int i = 0; i < 30 && WiFi.status() != WL_CONNECTED; i++) {
-    delay(500);
-    Serial.print(".");
-  }
-  wifiReady = WiFi.status() == WL_CONNECTED;
-  Serial.println(wifiReady ? "\nWiFi connected" : "\nWiFi failed");
-}
-
-// ---------- TIME HELPERS ----------
-String getDateStr() {
-  // TODO: sync NTP for real time
-  return "02-01-2026"; // placeholder
-}
-String getTimeStr() {
-  return "09:00 AM"; // placeholder
-}
-
-// ---------- SEND ATTENDANCE ----------
-void sendAttendance(const StudentBeacon& s, int rssi) {
-  if (!wifiReady || WiFi.status() != WL_CONNECTED) {
-    Serial.println("WiFi not ready, skip send");
-    return;
-  }
-  HTTPClient http;
-  http.begin(SERVER_URL);
-  http.addHeader("Content-Type", "application/json");
-
-  StaticJsonDocument<256> doc;
-  doc["name"] = s.name;
-  doc["rollNumber"] = s.roll;
-  doc["year"] = s.year;
-  doc["department"] = DEPARTMENT;
-  doc["location"] = LOCATION_ID;
-  doc["rssi"] = rssi;
-  doc["date"] = getDateStr();
-  doc["time"] = getTimeStr();
-
-  String body;
-  serializeJson(doc, body);
-  int code = http.POST(body);
-  Serial.printf("POST %d: %s\n", code, body.c_str());
-  http.end();
-}
-
-// ---------- BLE CALLBACK ----------
-class AdvCallbacks : public BLEAdvertisedDeviceCallbacks {
-  void onResult(BLEAdvertisedDevice dev) {
-    String mac = dev.getAddress().toString().c_str();
-    mac.toUpperCase();
-    int rssi = dev.getRSSI();
-    if (rssi < RSSI_THRESHOLD) return;
-
-    for (int i = 0; i < REG_COUNT; i++) {
-      if (mac == registry[i].mac) {
-        bool seen = false;
-        for (int j = 0; j < detectedCount; j++) if (detected[j] == mac) seen = true;
-        if (!seen && detectedCount < 64) {
-          detected[detectedCount++] = mac;
-          Serial.printf("Detected %s (%s) RSSI:%d\n", registry[i].name.c_str(), registry[i].roll.c_str(), rssi);
-          sendAttendance(registry[i], rssi);
-        }
-        break;
-      }
-    }
-  }
-};
-
-// ---------- SETUP ----------
-void setup() {
-  Serial.begin(115200);
-  Serial.println("\nESP32 BLE Attendance Scanner");
-
-  connectWiFi();
-
-  BLEDevice::init("ESP32_Attendance");
-  pBLEScan = BLEDevice::getScan();
-  pBLEScan->setAdvertisedDeviceCallbacks(new AdvCallbacks());
-  pBLEScan->setActiveScan(true);
-  pBLEScan->setInterval(100);
-  pBLEScan->setWindow(80);
-}
-
-// ---------- LOOP ----------
-void loop() {
-  Serial.printf("\nScan start (%d s)\n", SCAN_DURATION);
-  detectedCount = 0;
-  pBLEScan->start(SCAN_DURATION, false);
-  pBLEScan->clearResults();
-  Serial.printf("Scan done, found %d student(s)\n", detectedCount);
-  delay(SCAN_INTERVAL);
+  delay(100);
 }
