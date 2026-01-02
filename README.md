@@ -46,25 +46,10 @@ BLE-Attendance-system/
 
 ## 🚀 Quick Start
 
-### 1. Deploy Backend to Vercel
-
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Deploy
-vercel --prod
-```
-
+### 1. Deploy to Vercel
 **Note the URL**: `https://your-project.vercel.app`
 
-### 2. Deploy Frontend to GitHub Pages
-
-1. Push code to GitHub
-2. Go to **Settings → Pages**
-3. Enable Pages (source: `main` branch, root `/`)
-
-### 3. Configure & Upload ESP32
+### 2. Configure & Upload ESP32
 
 1. Update `esp32_ble_scanner.ino`:
    ```cpp
