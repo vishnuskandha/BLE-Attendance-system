@@ -1,15 +1,47 @@
 # BLE Attendance System
 
-🎓 A complete IoT attendance tracking system using ESP32, BLE beacons, and cloud deployment.
+🎓 A complete IoT attendance tracking system using ESP32, BLE beacons, AI-powered security with ID card detection, and cloud deployment.
 
 ## 🌟 Features
 
 - **Automatic BLE Scanning** - ESP32 scans for student beacons every minute
 - **Real-time Tracking** - Live attendance updates via cloud API
+- **🆕 AI Security Monitoring** - Roboflow-powered ID card detection with webcam
 - **Staff Permissions** - Local web interface for on-duty/permission management
 - **Smart Detection** - Auto-marks present during approved absence periods
 - **Modern Web Interface** - Responsive dashboard with filters and reports
 - **Cloud-Powered** - Serverless backend on Vercel, frontend on GitHub Pages
+
+## 🛡️ NEW: AI-Powered Security Module
+
+The system now includes an **AI-powered security feature** that uses your webcam and a pre-trained Roboflow model to:
+
+- ✅ **Detect persons** entering the monitored area
+- ✅ **Verify ID cards** are worn/visible
+- ✅ **Alert violations** when a person is detected without an ID card
+- ✅ **Capture evidence** automatically after 3 seconds of violation
+
+### How It Works
+
+```
+┌─────────────┐       ┌─────────────┐       ┌─────────────┐
+│   Webcam    │ Frame │  Roboflow   │Result │   Decision  │
+│   (Live)    │──────>│  AI Model   │──────>│   Engine    │
+│             │       │  (Browser)  │       │             │
+└─────────────┘       └─────────────┘       └─────────────┘
+                                                   │
+                            ┌──────────────────────┼──────────────────────┐
+                            │                      │                      │
+                            ▼                      ▼                      ▼
+                      🟢 Verified            🔴 Violation            🔵 Scanning
+                    Person + ID Card     Person without ID        No person detected
+```
+
+### Technology Stack
+- **AI Model**: [Roboflow Universe - id-card-detection-enon5](https://universe.roboflow.com/jays-workspace-i6huo/id-card-detection-enon5)
+- **Detection Classes**: `person`, `idcard`
+- **Confidence Threshold**: 50%+
+- **FPS**: Optimized at 10 FPS for performance
 
 ## 🏗️ System Architecture
 
@@ -17,7 +49,7 @@
 ┌─────────────┐       ┌─────────────┐       ┌─────────────┐
 │   ESP32     │ POST  │   Vercel    │  GET  │   Website   │
 │   Scanner   │──────>│   Backend   │<──────│(GitHub Pages)│
-│   + RTC     │ Data  │   API       │ Data  │             │
+│   + RTC     │ Data  │   API       │ Data  │ + AI Security│
 └─────────────┘       └─────────────┘       └─────────────┘
                       Serverless Functions
 ```
@@ -33,7 +65,7 @@ BLE-Attendance-system/
 │   └── index_mordern.html  # Backup of website
 ├── .github/
 │   └── copilot-instructions.md  # AI coding guidelines
-├── index.html              # Main web application
+├── index.html              # Main web application (includes AI Security)
 ├── esp32_ble_scanner.ino   # ESP32 firmware
 ├── vercel.json             # Vercel configuration
 ├── package.json            # Node.js dependencies
@@ -60,6 +92,18 @@ BLE-Attendance-system/
 
 2. Upload to ESP32 via Arduino IDE
 
+### 3. Setup AI Security (Optional)
+
+The AI security module is already integrated. To use it:
+
+1. Open the web application
+2. Navigate to **Security** section
+3. Click **Start Camera**
+4. Allow camera permissions when prompted
+5. The AI will start detecting persons and ID cards automatically
+
+**Note**: Requires a Roboflow API key (already configured in the code).
+
 ## 📚 Complete Documentation
 
 | Guide | Description |
@@ -75,6 +119,7 @@ BLE-Attendance-system/
 - **DS3231 RTC Module** - Real-time clock ($2-5)
 - **BLE Beacons** (2+) - Student ID tags ($3-8 each)
 - **Jumper Wires** - Connections ($1-2)
+- **Webcam** (for AI Security) - Built-in or USB webcam
 
 **Total Cost**: ~$20-40
 
@@ -95,6 +140,9 @@ BLE-Attendance-system/
 - ✅ Print-friendly reports
 - ✅ Responsive mobile layout
 - ✅ API integration with auto-refresh
+- ✅ **🆕 AI-powered ID card verification**
+- ✅ **🆕 Real-time person + ID detection**
+- ✅ **🆕 Violation capture & logging**
 
 ### Vercel Backend
 - ✅ Serverless architecture
@@ -102,6 +150,18 @@ BLE-Attendance-system/
 - ✅ JSON data storage
 - ✅ Query filtering (date, student, period)
 - ✅ Fast global CDN
+
+## 🛡️ Security Module Features
+
+| Feature | Description |
+|---------|-------------|
+| **Person Detection** | Detects people entering the camera view |
+| **ID Card Verification** | Verifies visible ID card on person |
+| **Stabilization Buffer** | 8-frame rolling average prevents flickering |
+| **Hysteresis** | Smooth state transitions (50% on, 30% off) |
+| **Violation Timer** | 3-second threshold before capturing |
+| **Debounce** | 5-second cooldown between captures |
+| **FPS Throttling** | 10 FPS for optimal performance |
 
 ## 👥 Student Registry
 
@@ -156,6 +216,13 @@ curl -X POST https://your-project.vercel.app/api/attendance \
 3. Navigate to Attendance section
 4. Data should load from API
 
+### Test AI Security
+1. Navigate to **Security** section
+2. Click **Start Camera**
+3. Stand in front of camera with ID card visible
+4. Verify detection: **Blue box** = Person, **Green box** = ID Card
+5. Status should show: "Verified: Person + ID Card (XX%)"
+
 ### Test ESP32
 1. Power on ESP32
 2. Check Serial Monitor (115200 baud)
@@ -178,15 +245,22 @@ curl -X POST https://your-project.vercel.app/api/attendance \
 - ✅ Verify MAC addresses
 - ✅ Increase RSSI threshold to -90
 
+### AI Security not working
+- ✅ Check camera permissions in browser
+- ✅ Open Console (F12) for Roboflow errors
+- ✅ Verify Roboflow API key is valid
+- ✅ Ensure HTTPS (required for camera access)
+
 ## 📈 Future Enhancements
 
+- [x] **AI ID Card Detection** ✅ Implemented!
 - [ ] Database persistence (Vercel KV / MongoDB)
 - [ ] Email notifications for absences
 - [ ] Real-time WebSocket updates
 - [ ] Mobile app (React Native)
 - [ ] Export to Excel/PDF
 - [ ] Multi-classroom support
-- [ ] Facial recognition backup
+- [ ] Facial recognition (future upgrade)
 
 ## 🤝 Contributing
 
@@ -204,6 +278,7 @@ MIT License - See LICENSE file for details
 ## 👨‍💻 Tech Stack
 
 - **Frontend**: HTML5, TailwindCSS, Vanilla JavaScript
+- **AI/ML**: Roboflow Inference.js (TensorFlow.js backend)
 - **Backend**: Node.js, Vercel Serverless Functions
 - **Hardware**: ESP32 (Arduino), DS3231 RTC, BLE Beacons
 - **Deployment**: Vercel (API) + GitHub Pages (Frontend)
@@ -220,4 +295,4 @@ For issues and questions:
 
 **Made with ❤️ for Smart Campus Management**
 
-**Last Updated**: January 2, 2026 | **Version**: 1.0.0
+**Last Updated**: January 31, 2026 | **Version**: 2.0.0 (with AI Security)

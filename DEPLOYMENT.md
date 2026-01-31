@@ -6,6 +6,8 @@ This system requires **two deployments**:
 1. **Frontend (Website)** → GitHub Pages (FREE)
 2. **Backend (API)** → Vercel (FREE)
 
+**NEW in v2.0**: The frontend now includes an **AI-powered Security module** that uses your webcam for ID card detection (no additional deployment needed).
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                    ARCHITECTURE                              │
@@ -15,11 +17,15 @@ This system requires **two deployments**:
 │   Scanner   ──────────────►   (Backend)   ◄──────────────   │
 │                               /api/attendance                │
 │                                     │                        │
-│                                     │                        │
 │                                     ▼                        │
 │                              GitHub Pages                    │
 │                               (Frontend)                     │
 │                              index.html                      │
+│                                  │                           │
+│                                  ▼                           │
+│                         🛡️ AI Security Module                │
+│                           (Browser-based)                    │
+│                        Roboflow ID Detection                 │
 │                                                              │
 └─────────────────────────────────────────────────────────────┘
 ```

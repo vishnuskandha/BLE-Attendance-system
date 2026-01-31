@@ -8,100 +8,134 @@
     <title>BLE Attendance System - Modern</title>
     <style>
         @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
-        
+
         @keyframes slideIn {
-            from { opacity: 0; transform: translateX(-20px); }
-            to { opacity: 1; transform: translateX(0); }
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
         }
-        
+
         @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
         }
-        
+
         .animate-fade-in {
             animation: fadeIn 0.5s ease-out;
         }
-        
+
         .animate-slide-in {
             animation: slideIn 0.3s ease-out;
         }
-        
+
         .col-filter-dropdown {
             min-width: 12rem;
             max-height: 18rem;
             overflow: auto;
         }
-        
+
         .gradient-bg {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
-        
+
         .glass-effect {
             background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid rgba(255, 255, 255, 0.2);
         }
-        
+
         .nav-btn-active {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             box-shadow: 0 4px 6px rgba(102, 126, 234, 0.3);
         }
-        
+
         .status-badge-p {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
         }
-        
+
         .status-badge-a {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
         }
-        
+
         @media print {
-            .no-print { display: none !important; }
-            body { background: white; }
-            .glass-effect { background: white; border: 1px solid #e5e7eb; }
+            .no-print {
+                display: none !important;
+            }
+
+            body {
+                background: white;
+            }
+
+            .glass-effect {
+                background: white;
+                border: 1px solid #e5e7eb;
+            }
         }
-        
+
         /* Custom scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
             height: 8px;
         }
-        
+
         ::-webkit-scrollbar-track {
             background: #f1f1f1;
         }
-        
+
         ::-webkit-scrollbar-thumb {
             background: #888;
             border-radius: 4px;
         }
-        
+
         ::-webkit-scrollbar-thumb:hover {
             background: #555;
         }
     </style>
+    <!-- Roboflow Inference SDK -->
+    <script src="https://cdn.roboflow.com/0.2.26/roboflow.js"></script>
 </head>
 
 <body class="bg-gradient-to-br from-gray-50 via-purple-50 to-gray-100 min-h-screen">
 
     <!-- LOGIN SECTION -->
-    <section id="section-login" class="section min-h-screen flex items-center justify-center px-4 gradient-bg relative overflow-hidden">
+    <section id="section-login"
+        class="section min-h-screen flex items-center justify-center px-4 gradient-bg relative overflow-hidden">
         <!-- Background decoration -->
         <div class="absolute inset-0 overflow-hidden pointer-events-none">
             <div class="absolute -top-40 -right-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
             <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-white/10 rounded-full blur-3xl"></div>
         </div>
-        
+
         <div class="w-full max-w-md glass-effect shadow-2xl rounded-3xl p-10 animate-fade-in relative z-10">
             <div class="text-center mb-8">
                 <div class="w-20 h-20 mx-auto mb-4 bg-white rounded-full flex items-center justify-center shadow-lg">
                     <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
                 </div>
                 <h1 class="text-3xl font-bold text-gray-800 mb-2">BLE Attendance Portal</h1>
@@ -139,7 +173,8 @@
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 gradient-bg rounded-lg flex items-center justify-center shadow-lg">
                             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                             </svg>
                         </div>
                         <div>
@@ -147,11 +182,13 @@
                             <p class="text-xs text-gray-500 hidden sm:block">Smart Campus Management System</p>
                         </div>
                     </div>
-                    
+
                     <div class="flex items-center gap-4 flex-wrap">
-                        <div id="realtimeClock" class="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg shadow-sm">
+                        <div id="realtimeClock"
+                            class="hidden sm:flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg shadow-sm">
                             <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                             <span class="text-sm font-semibold text-gray-700"></span>
                         </div>
@@ -171,7 +208,18 @@
                                 <span class="hidden sm:inline">Irregularities</span>
                                 <span class="sm:hidden">⚠️</span>
                             </button>
-                            <button id="logoutBtn" class="px-4 py-2 rounded-lg bg-red-500 text-white font-medium text-sm hover:bg-red-600 transition-all duration-200 hover:shadow-md">
+                            <button data-target="security"
+                                class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:shadow-md bg-gray-100">
+                                <span class="hidden sm:inline">Security</span>
+                                <span class="sm:hidden">🛡️</span>
+                            </button>
+                            <button data-target="id-violations"
+                                class="nav-btn px-4 py-2 rounded-lg font-medium text-sm transition-all duration-200 hover:shadow-md bg-gray-100">
+                                <span class="hidden sm:inline">ID Violations</span>
+                                <span class="sm:hidden">🚫</span>
+                            </button>
+                            <button id="logoutBtn"
+                                class="px-4 py-2 rounded-lg bg-red-500 text-white font-medium text-sm hover:bg-red-600 transition-all duration-200 hover:shadow-md">
                                 Logout
                             </button>
                         </nav>
@@ -193,38 +241,50 @@
 
                         <!-- Stats Cards -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
+                            <div
+                                class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
                                 <div class="flex items-center justify-between mb-2">
                                     <div id="statTotalStudents" class="text-3xl font-bold">2</div>
-                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
                                     </svg>
                                 </div>
                                 <div class="text-sm opacity-90 font-medium">Total Students</div>
                             </div>
-                            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
+                            <div
+                                class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
                                 <div class="flex items-center justify-between mb-2">
                                     <div id="statAttendanceRate" class="text-3xl font-bold">100%</div>
-                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                     </svg>
                                 </div>
                                 <div class="text-sm opacity-90 font-medium">Attendance Rate</div>
                             </div>
-                            <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
+                            <div
+                                class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
                                 <div class="flex items-center justify-between mb-2">
                                     <div id="statIrregularities" class="text-3xl font-bold">0</div>
-                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                                     </svg>
                                 </div>
                                 <div class="text-sm opacity-90 font-medium">Irregularities</div>
                             </div>
-                            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
+                            <div
+                                class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl p-6 text-white shadow-lg transform hover:scale-105 transition-all">
                                 <div class="flex items-center justify-between mb-2">
                                     <div id="statActiveSection" class="text-3xl font-bold">IT-B</div>
-                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                                    <svg class="w-8 h-8 opacity-80" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                                     </svg>
                                 </div>
                                 <div class="text-sm opacity-90 font-medium">Active Section</div>
@@ -235,12 +295,15 @@
                             <!-- Sheet Selection -->
                             <div class="bg-white rounded-xl p-6 shadow-md">
                                 <label class="block text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                     </svg>
                                     Select Sheet
                                 </label>
-                                <select id="sheetSelect" class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-gray-700 transition-all">
+                                <select id="sheetSelect"
+                                    class="w-full px-4 py-3 bg-gray-50 border-2 border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none text-gray-700 transition-all">
                                     <option value="">Choose a sheet...</option>
                                     <option value="attendance">📊 Attendance Records</option>
                                     <option value="irregular">⚠️ Irregularities Report</option>
@@ -250,8 +313,10 @@
                             <!-- Date Range -->
                             <div class="bg-white rounded-xl p-6 shadow-md">
                                 <label class="block text-lg font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                     Date Range
                                 </label>
@@ -273,7 +338,8 @@
                         <button id="applyRangeBtn"
                             class="w-full mt-6 py-4 gradient-bg text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M13 10V3L4 14h7v7l9-11h-7z" />
                             </svg>
                             Apply & View Records
                         </button>
@@ -294,7 +360,8 @@
                                 class="px-4 sm:px-5 py-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200 font-medium text-sm">
                                 <span class="flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                                     </svg>
                                     <span class="hidden sm:inline">Filter</span>
                                 </span>
@@ -303,7 +370,8 @@
                                 class="px-4 sm:px-5 py-2.5 bg-red-500 text-white rounded-xl shadow-md hover:bg-red-600 hover:shadow-lg transition-all duration-200 font-medium text-sm">
                                 <span class="flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                     <span class="hidden sm:inline">Remove</span>
                                 </span>
@@ -312,7 +380,8 @@
                                 class="px-4 sm:px-5 py-2.5 bg-gray-700 text-white rounded-xl shadow-md hover:bg-gray-800 hover:shadow-lg transition-all duration-200 font-medium text-sm">
                                 <span class="flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                     </svg>
                                     <span class="hidden sm:inline">Print</span>
                                 </span>
@@ -328,19 +397,27 @@
                                         <th class="w-1/8 px-4 py-4 relative font-semibold">
                                             <div class="flex items-center justify-between">
                                                 <span>DATE</span>
-                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="0">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                <button
+                                                    class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition"
+                                                    data-col="0">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
                                                     </svg>
                                                 </button>
                                             </div>
                                             <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
-                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter DATE</div>
+                                                <div
+                                                    class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter DATE
+                                                    </div>
                                                     <div class="filter-values space-y-2"></div>
                                                     <div class="mt-3 flex justify-between">
-                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
-                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                        <button
+                                                            class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button
+                                                            class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -348,19 +425,27 @@
                                         <th class="w-1/6 px-4 py-4 relative font-semibold">
                                             <div class="flex items-center justify-between">
                                                 <span>Name</span>
-                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="1">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                <button
+                                                    class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition"
+                                                    data-col="1">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
                                                     </svg>
                                                 </button>
                                             </div>
                                             <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
-                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Name</div>
+                                                <div
+                                                    class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Name
+                                                    </div>
                                                     <div class="filter-values space-y-2"></div>
                                                     <div class="mt-3 flex justify-between">
-                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
-                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                        <button
+                                                            class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button
+                                                            class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -368,19 +453,27 @@
                                         <th class="w-1/8 px-4 py-4 relative font-semibold">
                                             <div class="flex items-center justify-between">
                                                 <span>Dept</span>
-                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="2">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                <button
+                                                    class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition"
+                                                    data-col="2">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
                                                     </svg>
                                                 </button>
                                             </div>
                                             <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
-                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Dept</div>
+                                                <div
+                                                    class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Dept
+                                                    </div>
                                                     <div class="filter-values space-y-2"></div>
                                                     <div class="mt-3 flex justify-between">
-                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
-                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                        <button
+                                                            class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button
+                                                            class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -388,19 +481,27 @@
                                         <th class="w-1/10 px-4 py-4 relative font-semibold">
                                             <div class="flex items-center justify-between">
                                                 <span>ID</span>
-                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="3">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                <button
+                                                    class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition"
+                                                    data-col="3">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
                                                     </svg>
                                                 </button>
                                             </div>
                                             <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
-                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter ID</div>
+                                                <div
+                                                    class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter ID
+                                                    </div>
                                                     <div class="filter-values space-y-2"></div>
                                                     <div class="mt-3 flex justify-between">
-                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
-                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                        <button
+                                                            class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button
+                                                            class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -408,79 +509,111 @@
                                         <th class="w-1/12 px-4 py-4 relative font-semibold">
                                             <div class="flex items-center justify-between">
                                                 <span>Year</span>
-                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="4">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
+                                                <button
+                                                    class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition"
+                                                    data-col="4">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2" d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
                                                     </svg>
                                                 </button>
                                             </div>
                                             <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
-                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Year</div>
+                                                <div
+                                                    class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Year
+                                                    </div>
                                                     <div class="filter-values space-y-2"></div>
                                                     <div class="mt-3 flex justify-between">
-                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
-                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                        <button
+                                                            class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button
+                                                            class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
                                                     </div>
                                                 </div>
                                             </div>
                                         </th>
                                         <th class="w-1/10 px-4 py-4 relative font-semibold">
                                             <div class="flex items-center justify-between">
-                                                <span>PERIOD 1<br/><span class="text-xs font-normal opacity-90">8:15-10:15</span></span>
-                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="5">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <span>PERIOD 1<br /><span
+                                                        class="text-xs font-normal opacity-90">8:15-10:15</span></span>
+                                                <button
+                                                    class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition"
+                                                    data-col="5">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
                                                         <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
                                                     </svg>
                                                 </button>
                                             </div>
                                             <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
-                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Period 1</div>
+                                                <div
+                                                    class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Period
+                                                        1</div>
                                                     <div class="filter-values space-y-2"></div>
                                                     <div class="mt-3 flex justify-between">
-                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
-                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                        <button
+                                                            class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button
+                                                            class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
                                                     </div>
                                                 </div>
                                             </div>
                                         </th>
                                         <th class="w-1/10 px-4 py-4 relative font-semibold">
                                             <div class="flex items-center justify-between">
-                                                <span>PERIOD 2<br/><span class="text-xs font-normal opacity-90">10:30-12:45</span></span>
-                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="6">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <span>PERIOD 2<br /><span
+                                                        class="text-xs font-normal opacity-90">10:30-12:45</span></span>
+                                                <button
+                                                    class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition"
+                                                    data-col="6">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
                                                         <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
                                                     </svg>
                                                 </button>
                                             </div>
                                             <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
-                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Period 2</div>
+                                                <div
+                                                    class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Period
+                                                        2</div>
                                                     <div class="filter-values space-y-2"></div>
                                                     <div class="mt-3 flex justify-between">
-                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
-                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                        <button
+                                                            class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button
+                                                            class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
                                                     </div>
                                                 </div>
                                             </div>
                                         </th>
                                         <th class="w-1/10 px-4 py-4 relative font-semibold">
                                             <div class="flex items-center justify-between">
-                                                <span>PERIOD 3<br/><span class="text-xs font-normal opacity-90">1:30-3:45</span></span>
-                                                <button class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition" data-col="7">
-                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <span>PERIOD 3<br /><span
+                                                        class="text-xs font-normal opacity-90">1:30-3:45</span></span>
+                                                <button
+                                                    class="filter-toggle hidden p-1 rounded hover:bg-white/20 transition"
+                                                    data-col="7">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                                                        viewBox="0 0 24 24">
                                                         <path d="M3 4h18v2l-7 7v5l-4 2v-7L3 6z" />
                                                     </svg>
                                                 </button>
                                             </div>
                                             <div class="filter-dropdown hidden absolute left-0 mt-2 z-50">
-                                                <div class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
-                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Period 3</div>
+                                                <div
+                                                    class="col-filter-dropdown bg-white border rounded-xl shadow-2xl p-3">
+                                                    <div class="text-sm font-semibold mb-2 text-gray-700">Filter Period
+                                                        3</div>
                                                     <div class="filter-values space-y-2"></div>
                                                     <div class="mt-3 flex justify-between">
-                                                        <button class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
-                                                        <button class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
+                                                        <button
+                                                            class="apply-btn px-3 py-1 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition">Apply</button>
+                                                        <button
+                                                            class="clear-btn px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition">Clear</button>
                                                     </div>
                                                 </div>
                                             </div>
@@ -488,25 +621,39 @@
                                     </tr>
                                 </thead>
                                 <tbody class="bg-white divide-y divide-gray-100">
-                                    <tr class="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200">
+                                    <tr
+                                        class="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200">
                                         <td class="px-4 py-4 text-gray-700 font-medium">02-01-2026</td>
                                         <td class="px-4 py-4 font-semibold text-gray-900">Mathumitha R</td>
                                         <td class="px-4 py-4 text-gray-700">IT-B</td>
                                         <td class="px-4 py-4 text-gray-600 font-mono text-xs">310622205081</td>
                                         <td class="px-4 py-4 text-gray-700">4</td>
-                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
-                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
-                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
+                                        <td class="px-4 py-4"><span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓
+                                                P</span></td>
+                                        <td class="px-4 py-4"><span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓
+                                                P</span></td>
+                                        <td class="px-4 py-4"><span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓
+                                                P</span></td>
                                     </tr>
-                                    <tr class="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200">
+                                    <tr
+                                        class="hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200">
                                         <td class="px-4 py-4 text-gray-700 font-medium">02-01-2026</td>
                                         <td class="px-4 py-4 font-semibold text-gray-900">Lipsa Sahoo</td>
                                         <td class="px-4 py-4 text-gray-700">IT-B</td>
                                         <td class="px-4 py-4 text-gray-600 font-mono text-xs">310622205075</td>
                                         <td class="px-4 py-4 text-gray-700">4</td>
-                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
-                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
-                                        <td class="px-4 py-4"><span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓ P</span></td>
+                                        <td class="px-4 py-4"><span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓
+                                                P</span></td>
+                                        <td class="px-4 py-4"><span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓
+                                                P</span></td>
+                                        <td class="px-4 py-4"><span
+                                                class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-p shadow-sm">✓
+                                                P</span></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -514,6 +661,7 @@
                     </div>
                 </div>
             </section>
+
 
             <!-- IRREGULARITIES SECTION -->
             <section id="section-irregular" class="section hidden">
@@ -524,26 +672,32 @@
                             <p class="text-gray-600 text-sm mt-1">Monitor and track attendance irregularities</p>
                         </div>
                         <div class="flex gap-2 sm:gap-3 flex-wrap">
-                            <button id="filterBtn" class="px-4 sm:px-5 py-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200 font-medium text-sm">
+                            <button id="filterBtn"
+                                class="px-4 sm:px-5 py-2.5 bg-blue-600 text-white rounded-xl shadow-md hover:bg-blue-700 hover:shadow-lg transition-all duration-200 font-medium text-sm">
                                 <span class="flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
                                     </svg>
                                     <span class="hidden sm:inline">Filter</span>
                                 </span>
                             </button>
-                            <button id="removeFilterBtn" class="px-4 sm:px-5 py-2.5 bg-red-500 text-white rounded-xl shadow-md hover:bg-red-600 hover:shadow-lg transition-all duration-200 font-medium text-sm hidden">
+                            <button id="removeFilterBtn"
+                                class="px-4 sm:px-5 py-2.5 bg-red-500 text-white rounded-xl shadow-md hover:bg-red-600 hover:shadow-lg transition-all duration-200 font-medium text-sm hidden">
                                 <span class="flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M6 18L18 6M6 6l12 12" />
                                     </svg>
                                     <span class="hidden sm:inline">Remove</span>
                                 </span>
                             </button>
-                            <button onclick="window.print()" class="px-4 sm:px-5 py-2.5 bg-gray-700 text-white rounded-xl shadow-md hover:bg-gray-800 hover:shadow-lg transition-all duration-200 font-medium text-sm">
+                            <button onclick="window.print()"
+                                class="px-4 sm:px-5 py-2.5 bg-gray-700 text-white rounded-xl shadow-md hover:bg-gray-800 hover:shadow-lg transition-all duration-200 font-medium text-sm">
                                 <span class="flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                                     </svg>
                                     <span class="hidden sm:inline">Print</span>
                                 </span>
@@ -568,14 +722,114 @@
                                     <tr>
                                         <td colspan="6" class="py-16 text-center">
                                             <div class="flex flex-col items-center justify-center">
-                                                <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                                                    <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                <div
+                                                    class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                                    <svg class="w-10 h-10 text-green-600" fill="none"
+                                                        stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round"
+                                                            stroke-width="2"
+                                                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                                                     </svg>
                                                 </div>
-                                                <p class="text-lg font-semibold text-gray-700 mb-2">No Irregularities Recorded</p>
-                                                <p class="text-sm text-gray-500">All students are following the attendance policy ✓</p>
+                                                <p class="text-lg font-semibold text-gray-700 mb-2">No Irregularities
+                                                    Recorded</p>
+                                                <p class="text-sm text-gray-500">All students are following the
+                                                    attendance policy ✓</p>
                                             </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECURITY SECTION -->
+            <section id="section-security" class="section hidden">
+                <div class="max-w-4xl mx-auto">
+                    <div class="glass-effect rounded-2xl p-6 shadow-xl animate-fade-in">
+                        <div class="text-center mb-6">
+                            <h2 class="text-3xl font-bold text-gray-800 mb-2">🛡️ Security Scan</h2>
+                            <p class="text-gray-600">AI-Powered ID Card Compliance Check</p>
+                        </div>
+
+                        <!-- Video Container -->
+                        <div
+                            class="relative w-full aspect-video rounded-xl overflow-hidden bg-black shadow-2xl mb-6 group">
+                            <video id="webcam" autoplay playsinline muted
+                                class="w-full h-full object-cover transform scale-x-[-1]"></video>
+                            <canvas id="overlay"
+                                class="absolute inset-0 w-full h-full pointer-events-none transform scale-x-[-1]"></canvas>
+
+                            <!-- Status Overlay -->
+                            <div
+                                class="absolute top-4 left-4 bg-black/60 backdrop-blur-md rounded-lg px-4 py-2 flex items-center gap-2">
+                                <div id="aiStatus" class="w-3 h-3 rounded-full bg-yellow-400 animate-pulse"></div>
+                                <span id="aiStatusText" class="text-white text-sm font-medium">Initializing AI...</span>
+                            </div>
+
+                            <!-- Violation Counter Overlay -->
+                            <div
+                                class="absolute top-4 right-4 bg-red-600/90 backdrop-blur-md rounded-lg px-4 py-2 flex items-center gap-2 shadow-lg">
+                                <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                </svg>
+                                <span class="text-white text-sm font-bold">Violations: <span
+                                        id="violationCount">0</span></span>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-center gap-4">
+                            <button id="toggleCameraBtn"
+                                class="px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all font-semibold flex items-center gap-2">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                Start Camera
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ID VIOLATIONS SECTION -->
+            <section id="section-id-violations" class="section hidden">
+                <div class="animate-slide-in">
+                    <div class="flex items-center justify-between mb-6 flex-wrap gap-4 no-print">
+                        <div>
+                            <h2 class="text-2xl sm:text-3xl font-bold text-gray-800">🚫 ID Card Violations</h2>
+                            <p class="text-gray-600 text-sm mt-1">Report of individuals detected without ID cards</p>
+                        </div>
+                        <button onclick="window.print()"
+                            class="px-4 sm:px-5 py-2.5 bg-gray-700 text-white rounded-xl shadow-md hover:bg-gray-800 hover:shadow-lg transition-all duration-200 font-medium text-sm">
+                            <span class="flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                </svg>
+                                <span class="hidden sm:inline">Print Report</span>
+                            </span>
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full" id="violationsTable">
+                                <thead class="bg-red-600 text-white">
+                                    <tr>
+                                        <th class="py-4 px-6 text-left font-semibold">Time</th>
+                                        <th class="py-4 px-6 text-left font-semibold">Capture</th>
+                                        <th class="py-4 px-6 text-left font-semibold">Alert Type</th>
+                                        <th class="py-4 px-6 text-left font-semibold">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-100">
+                                    <tr id="noViolationsRow">
+                                        <td colspan="4" class="py-12 text-center text-gray-500">
+                                            No violations detected yet.
                                         </td>
                                     </tr>
                                 </tbody>
@@ -588,6 +842,12 @@
         </main>
     </div>
 
+    <!-- TENSORFLOW.JS & OPENCV.JS -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@latest/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd"></script>
+    <script async src="https://docs.opencv.org/4.5.4/opencv.js" onload="onOpenCvReady();"
+        type="text/javascript"></script>
+
     <!-- SCRIPTS -->
     <script>
         // ============================================
@@ -598,7 +858,7 @@
         const API_BASE_URL = 'https://ble-attendance-system-pink.vercel.app';
         const ATTENDANCE_API = `${API_BASE_URL}/api/attendance`;
         const STUDENTS_API = `${API_BASE_URL}/api/students`;
-        
+
         // Auto-refresh interval (in milliseconds) - 60 seconds
         const AUTO_REFRESH_INTERVAL = 60000;
         let refreshTimer = null;
@@ -645,13 +905,13 @@
             const day = String(now.getDate()).padStart(2, '0');
             const month = String(now.getMonth() + 1).padStart(2, '0');
             const year = now.getFullYear();
-            
+
             const clockElement = document.getElementById('realtimeClock');
             if (clockElement) {
                 clockElement.querySelector('span').textContent = `${day}-${month}-${year} ${hours}:${minutes}:${seconds}`;
             }
         }
-        
+
         updateClock();
         setInterval(updateClock, 1000);
 
@@ -659,19 +919,22 @@
         const sectionMap = {
             dashboard: document.getElementById('section-dashboard'),
             attendance: document.getElementById('section-attendance'),
-            irregular: document.getElementById('section-irregular')
+            irregular: document.getElementById('section-irregular'),
+            security: document.getElementById('section-security'),
+            'id-violations': document.getElementById('section-id-violations')
         };
         const navBtns = document.querySelectorAll('.nav-btn');
 
         let attendanceInitialized = false;
         let irregularInitialized = false;
+        let securityInitialized = false;
 
         function showSection(key) {
             Object.entries(sectionMap).forEach(([k, el]) => {
                 if (!el) return;
                 el.classList.toggle('hidden', k !== key);
             });
-            
+
             // Update nav button styles
             navBtns.forEach(btn => {
                 if (btn.getAttribute('data-target') === key) {
@@ -682,7 +945,7 @@
                     btn.classList.add('bg-gray-100');
                 }
             });
-            
+
             if (key) location.hash = key;
 
             if (key === 'attendance' && !attendanceInitialized) {
@@ -693,7 +956,13 @@
                 initIrregularFilters();
                 irregularInitialized = true;
             }
-            
+            if (key === 'security') {
+                if (!securityInitialized) {
+                    initSecurity();
+                    securityInitialized = true;
+                }
+            }
+
             // Fetch data when entering attendance section
             if (key === 'attendance') {
                 fetchAttendanceData();
@@ -717,6 +986,331 @@
             if (value === 'attendance') showSection('attendance');
             else if (value === 'irregular') showSection('irregular');
         });
+
+        // ============================================
+        // SECURITY & AI LOGIC (ROBOFLOW POWERED)
+        // ============================================
+        let video = document.getElementById('webcam');
+        let overlay = document.getElementById('overlay');
+        let ctx = overlay.getContext('2d');
+        let model = null;
+        let isCameraOn = false;
+        let violationCount = 0;
+
+        let currentViolatorStart = null;
+        const VIOLATION_THRESHOLD = 3000; // 3 seconds
+        const DEBOUNCE_TIME = 5000; // 5 seconds
+        let lastLoggedTime = 0;
+
+        // PERFORMANCE: FPS Throttling
+        const TARGET_FPS = 10; // Process 10 frames per second (sufficient for ID detection)
+        const FRAME_INTERVAL = 1000 / TARGET_FPS;
+        let lastFrameTime = 0;
+
+        // DETECTION STABILIZATION
+        const DETECTION_BUFFER_SIZE = 8; // Fewer frames needed with throttling
+        let detectionBuffer = [];
+        let stableIDDetected = false;
+
+
+        // Start Camera Button
+        document.getElementById('toggleCameraBtn')?.addEventListener('click', startCamera);
+
+        async function initSecurity() {
+            if (!model) {
+                updateAIStatus('bg-yellow-400', 'Loading Roboflow ID Card Model...');
+
+                // User's selected model from Roboflow Universe
+                const modelsToTry = [
+                    { model: "id-card-detection-enon5", version: 1 }  // jays-workspace
+                ];
+
+                for (let i = 0; i < modelsToTry.length; i++) {
+                    try {
+                        updateAIStatus('bg-yellow-400', `Trying model ${i + 1}/${modelsToTry.length}...`);
+                        console.log(`Attempting to load: ${modelsToTry[i].model}`);
+
+                        model = await roboflow.auth({
+                            publishable_key: "rf_oHASlDufhOSjOs7oiFJKNKtcyqH2"
+                        }).load({
+                            model: modelsToTry[i].model,
+                            version: modelsToTry[i].version,
+                            confidence: 1.0,  // Higher threshold to avoid false positives
+                            overlap: 0.5
+                        });
+
+                        updateAIStatus('bg-blue-400', `Model Ready: ${modelsToTry[i].model}`);
+                        console.log(`✓ Successfully loaded: ${modelsToTry[i].model}`);
+                        return; // Exit on success
+
+                    } catch (e) {
+                        console.warn(`✗ Failed to load ${modelsToTry[i].model}:`, e.message);
+                    }
+                }
+
+                // All models failed
+                updateAIStatus('bg-red-500', 'All models failed - Check API key');
+                console.error("Could not load any Roboflow model. Check your API key permissions.");
+            }
+        }
+
+        async function startCamera() {
+            if (isCameraOn) return;
+            try {
+                // Request camera
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 640, height: 480, facingMode: 'user' }
+                });
+                video.srcObject = stream;
+                isCameraOn = true;
+
+                document.getElementById('toggleCameraBtn').classList.add('hidden');
+
+                video.onloadedmetadata = () => {
+                    overlay.width = video.videoWidth;
+                    overlay.height = video.videoHeight;
+                    updateAIStatus('bg-green-500', 'System Active - Scanning');
+                    detectFrame();
+                };
+            } catch (err) {
+                console.error("Camera Error:", err);
+                alert("Could not access camera. Please allow permissions.");
+            }
+        }
+
+        function updateAIStatus(colorClass, text) {
+            const ind = document.getElementById('aiStatus');
+            const txt = document.getElementById('aiStatusText');
+            ind.className = `w-3 h-3 rounded-full animate-pulse ${colorClass}`;
+            txt.textContent = text;
+        }
+
+        async function detectFrame(timestamp) {
+            if (!isCameraOn || !model) {
+                requestAnimationFrame(detectFrame);
+                return;
+            }
+
+            // FPS Throttling - skip frames to improve performance
+            if (timestamp - lastFrameTime < FRAME_INTERVAL) {
+                requestAnimationFrame(detectFrame);
+                return;
+            }
+            lastFrameTime = timestamp;
+
+            ctx.clearRect(0, 0, overlay.width, overlay.height);
+
+            let personDetectedThisFrame = false;
+            let idCardDetectedThisFrame = false;
+            let idCardConfidence = 0;
+
+            try {
+                // Run Roboflow inference directly on video element
+                const predictions = await model.detect(video);
+
+                // Process predictions - track both 'person' and 'idcard' classes
+                for (let pred of predictions) {
+                    const className = pred.class.toLowerCase();
+
+                    // Track Person detection
+                    if (className === 'person') {
+                        if (pred.confidence > 0.5) {
+                            personDetectedThisFrame = true;
+
+                            // Draw person box (Blue)
+                            const bx = pred.bbox.x - pred.bbox.width / 2;
+                            const by = pred.bbox.y - pred.bbox.height / 2;
+                            ctx.strokeStyle = '#3b82f6';
+                            ctx.lineWidth = 2;
+                            ctx.strokeRect(bx, by, pred.bbox.width, pred.bbox.height);
+                            ctx.fillStyle = '#3b82f6';
+                            ctx.font = 'bold 12px sans-serif';
+                            ctx.fillText(`Person ${(pred.confidence * 100).toFixed(0)}%`, bx, by - 5);
+                        }
+                    }
+
+                    // Track ID Card detection
+                    if (className === 'idcard' || className === 'id_card' || className === 'id-card') {
+                        if (pred.confidence > 0.5) {
+                            idCardDetectedThisFrame = true;
+                            if (pred.confidence > idCardConfidence) idCardConfidence = pred.confidence;
+
+                            // Draw ID card box (Green)
+                            const bx = pred.bbox.x - pred.bbox.width / 2;
+                            const by = pred.bbox.y - pred.bbox.height / 2;
+                            ctx.strokeStyle = '#22c55e';
+                            ctx.lineWidth = 4;
+                            ctx.strokeRect(bx, by, pred.bbox.width, pred.bbox.height);
+                            ctx.fillStyle = '#22c55e';
+                            ctx.font = 'bold 16px sans-serif';
+                            ctx.fillText(`ID Card ${(pred.confidence * 100).toFixed(0)}%`, bx, by - 10);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.warn('Roboflow detection error:', err);
+            }
+
+            // STABILIZATION: Update rolling buffer (only track ID card status when person is present)
+            if (personDetectedThisFrame) {
+                detectionBuffer.push(idCardDetectedThisFrame);
+                if (detectionBuffer.length > DETECTION_BUFFER_SIZE) {
+                    detectionBuffer.shift();
+                }
+
+                // Calculate rolling average
+                const positiveCount = detectionBuffer.filter(x => x).length;
+                const ratio = positiveCount / detectionBuffer.length;
+
+                // Hysteresis for stable detection
+                if (ratio >= 0.5) {
+                    stableIDDetected = true;
+                } else if (ratio < 0.3) {
+                    stableIDDetected = false;
+                }
+            } else {
+                // No person detected - reset buffer
+                detectionBuffer = [];
+                stableIDDetected = false;
+            }
+
+            // Update UI based on detection results
+            if (personDetectedThisFrame) {
+                if (stableIDDetected) {
+                    updateAIStatus('bg-green-500', `Verified: Person + ID Card (${(idCardConfidence * 100).toFixed(0)}%)`);
+                    currentViolatorStart = null;
+                } else {
+                    updateAIStatus('bg-red-500', 'Warning: Person without ID Card!');
+
+                    // Track time for violation
+                    if (!currentViolatorStart) currentViolatorStart = Date.now();
+
+                    const elapsed = Date.now() - currentViolatorStart;
+                    if (elapsed > VIOLATION_THRESHOLD) {
+                        if (Date.now() - lastLoggedTime > DEBOUNCE_TIME) {
+                            captureViolation();
+                            lastLoggedTime = Date.now();
+                        }
+                    }
+                }
+            } else {
+                currentViolatorStart = null;
+                updateAIStatus('bg-blue-400', 'Scanning for people...');
+            }
+
+            requestAnimationFrame(detectFrame);
+        }
+
+        // OpenCV Logic - EDGE DENSITY Detection (More Stable)
+        // ID cards have text/photos = high edge density
+        // Plain shirts have low edge density
+        function detectIDCardInROI(x, y, w, h, debugCtx) {
+            try {
+                // Bounds check
+                if (x < 0 || y < 0 || (x + w) > overlay.width || (y + h) > overlay.height) return false;
+                if (w <= 0 || h <= 0) return false;
+
+                const roiCanvas = document.createElement('canvas');
+                roiCanvas.width = w;
+                roiCanvas.height = h;
+                const roiCtx = roiCanvas.getContext('2d');
+                roiCtx.drawImage(video, x, y, w, h, 0, 0, w, h);
+
+                let src = cv.imread(roiCanvas);
+                let gray = new cv.Mat();
+                let edges = new cv.Mat();
+
+                // Grayscale
+                cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY, 0);
+
+                // Blur to reduce noise
+                cv.GaussianBlur(gray, gray, new cv.Size(3, 3), 0);
+
+                // Canny Edge Detection
+                cv.Canny(gray, edges, 50, 150, 3, false);
+
+                // Count edge pixels
+                const edgePixels = cv.countNonZero(edges);
+                const totalPixels = w * h;
+                const edgeDensity = edgePixels / totalPixels;
+
+                // Debug: Draw edge density value
+                if (debugCtx) {
+                    debugCtx.fillStyle = 'rgba(255,255,255,0.8)';
+                    debugCtx.font = 'bold 14px monospace';
+                    debugCtx.fillText(`Edges: ${(edgeDensity * 100).toFixed(1)}%`, x + 5, y + h - 10);
+                }
+
+                // Cleanup
+                src.delete();
+                gray.delete();
+                edges.delete();
+
+                // ID Card Threshold: Cards have text/photos = higher edge density
+                // Typical plain shirt: 5-10%, ID card: 15-40%
+                const ID_CARD_THRESHOLD = 0.12; // 12% edge density
+
+                const detected = edgeDensity > ID_CARD_THRESHOLD;
+
+                // Visual feedback
+                if (detected && debugCtx) {
+                    debugCtx.strokeStyle = '#22c55e';
+                    debugCtx.lineWidth = 4;
+                    debugCtx.strokeRect(x, y, w, h);
+                    debugCtx.fillStyle = '#22c55e';
+                    debugCtx.font = 'bold 16px sans-serif';
+                    debugCtx.fillText('✓ ID CARD', x + 5, y + 20);
+                }
+
+                return detected;
+
+            } catch (err) {
+                console.warn("OpenCV Error", err);
+                return false;
+            }
+        }
+
+        function onOpenCvReady() {
+            console.log('OpenCV.js matches loaded');
+        }
+
+        function captureViolation() {
+            violationCount++;
+            document.getElementById('violationCount').textContent = violationCount;
+
+            // Capture High-Res Frame
+            const capCanvas = document.createElement('canvas');
+            capCanvas.width = video.videoWidth;
+            capCanvas.height = video.videoHeight;
+            capCanvas.getContext('2d').drawImage(video, 0, 0);
+            const imgData = capCanvas.toDataURL('image/jpeg', 0.8);
+
+            // Log
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+
+            const tbody = document.querySelector('#violationsTable tbody');
+            const noRow = document.getElementById('noViolationsRow');
+            if (noRow) noRow.remove();
+
+            const row = document.createElement('tr');
+            row.className = 'animate-fade-in hover:bg-red-50';
+            row.innerHTML = `
+                <td class="py-4 px-6 text-gray-800 font-medium">${timeString}</td>
+                <td class="py-4 px-6">
+                    <img src="${imgData}" class="w-16 h-16 object-cover rounded-lg border-2 border-red-200 shadow-sm hover:scale-150 transition-transform cursor-pointer" onclick="window.open(this.src)">
+                </td>
+                <td class="py-4 px-6">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                        Missing ID Card
+                    </span>
+                </td>
+                <td class="py-4 px-6 text-red-600 font-semibold">Captured</td>
+            `;
+
+            // Prepend to top
+            tbody.insertBefore(row, tbody.firstChild);
+        }
 
         // Attendance filters
         function initAttendanceFilters() {
@@ -777,7 +1371,7 @@
                     if (dateRegex.test(a) && dateRegex.test(b)) {
                         const [d1, m1, y1] = a.split('-');
                         const [d2, m2, y2] = b.split('-');
-                        return new Date(y1, m1-1, d1) - new Date(y2, m2-1, d2);
+                        return new Date(y1, m1 - 1, d1) - new Date(y2, m2 - 1, d2);
                     }
                     const na = Number(a), nb = Number(b);
                     if (!isNaN(na) && !isNaN(nb)) return na - nb;
@@ -897,12 +1491,12 @@
         // ============================================
         // API DATA FETCHING FUNCTIONS
         // ============================================
-        
+
         // Fetch attendance data from API
         async function fetchAttendanceData() {
             const tbody = document.querySelector('#attendanceTable tbody');
             if (!tbody) return;
-            
+
             // Show loading state
             tbody.innerHTML = `
                 <tr>
@@ -914,13 +1508,13 @@
                     </td>
                 </tr>
             `;
-            
+
             try {
                 const response = await fetch(ATTENDANCE_API);
                 if (!response.ok) throw new Error('API request failed');
-                
+
                 const data = await response.json();
-                
+
                 if (!data || data.length === 0) {
                     tbody.innerHTML = `
                         <tr>
@@ -932,18 +1526,18 @@
                     `;
                     return;
                 }
-                
+
                 // Clear and populate table
                 tbody.innerHTML = '';
                 data.forEach(record => {
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200';
-                    
+
                     // Determine period statuses
                     const p1Status = record.period1 || (record.period === 1 ? record.status : '-');
                     const p2Status = record.period2 || (record.period === 2 ? record.status : '-');
                     const p3Status = record.period3 || (record.period === 3 ? record.status : '-');
-                    
+
                     row.innerHTML = `
                         <td class="px-4 py-4 text-gray-700 font-medium">${record.date || '-'}</td>
                         <td class="px-4 py-4 font-semibold text-gray-900">${record.name || '-'}</td>
@@ -956,10 +1550,10 @@
                     `;
                     tbody.appendChild(row);
                 });
-                
+
                 // Update dashboard stats
                 updateDashboardStats(data);
-                
+
             } catch (error) {
                 console.error('Error fetching attendance:', error);
                 tbody.innerHTML = `
@@ -980,19 +1574,19 @@
                 `;
             }
         }
-        
+
         // Fetch irregularities data from API
         async function fetchIrregularitiesData() {
             const tbody = document.querySelector('#dataTable tbody');
             if (!tbody) return;
-            
+
             try {
                 const response = await fetch(`${ATTENDANCE_API}?irregularities=true`);
                 if (!response.ok) throw new Error('API request failed');
-                
+
                 const data = await response.json();
                 const irregularities = data.filter(r => r.status === 'Absent' || r.irregularity);
-                
+
                 if (!irregularities || irregularities.length === 0) {
                     tbody.innerHTML = `
                         <tr>
@@ -1011,7 +1605,7 @@
                     `;
                     return;
                 }
-                
+
                 tbody.innerHTML = '';
                 irregularities.forEach(record => {
                     const row = document.createElement('tr');
@@ -1026,12 +1620,12 @@
                     `;
                     tbody.appendChild(row);
                 });
-                
+
             } catch (error) {
                 console.error('Error fetching irregularities:', error);
             }
         }
-        
+
         // Generate status badge HTML
         function getStatusBadge(status) {
             if (!status || status === '-') {
@@ -1043,38 +1637,38 @@
             }
             return '<span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold text-white status-badge-a shadow-sm">✗ A</span>';
         }
-        
+
         // Update dashboard statistics
         function updateDashboardStats(data) {
             if (!data || data.length === 0) return;
-            
+
             // Get unique students
             const uniqueStudents = new Set(data.map(r => r.studentId || r.rollNumber));
             const totalStudents = uniqueStudents.size || 2;
-            
+
             // Calculate attendance rate
             const presentRecords = data.filter(r => r.status === 'Present').length;
             const totalRecords = data.length;
             const attendanceRate = totalRecords > 0 ? Math.round((presentRecords / totalRecords) * 100) : 100;
-            
+
             // Count irregularities
             const irregularities = data.filter(r => r.status === 'Absent').length;
-            
+
             // Get department from first record
             const department = data[0]?.department || 'IT-B';
-            
+
             // Update dashboard cards
             const statTotalStudents = document.getElementById('statTotalStudents');
             const statAttendanceRate = document.getElementById('statAttendanceRate');
             const statIrregularities = document.getElementById('statIrregularities');
             const statActiveSection = document.getElementById('statActiveSection');
-            
+
             if (statTotalStudents) statTotalStudents.textContent = totalStudents;
             if (statAttendanceRate) statAttendanceRate.textContent = attendanceRate + '%';
             if (statIrregularities) statIrregularities.textContent = irregularities;
             if (statActiveSection) statActiveSection.textContent = department;
         }
-        
+
         // Auto-refresh data
         function startAutoRefresh() {
             if (refreshTimer) clearInterval(refreshTimer);
@@ -1087,7 +1681,7 @@
                 }
             }, AUTO_REFRESH_INTERVAL);
         }
-        
+
         // Start auto-refresh when logged in
         document.getElementById('loginForm').addEventListener('submit', (e) => {
             // After successful login, start auto-refresh
