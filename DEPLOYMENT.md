@@ -134,7 +134,7 @@ git push
 
 ## 🔧 Step 4: Configure ESP32
 
-Update `esp32_ble_scanner.ino`:
+Update `esp32_attendance_optimized.ino`:
 
 ```cpp
 // WiFi credentials
@@ -145,6 +145,8 @@ const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 const char* SERVER_URL = "https://YOUR-PROJECT-NAME.vercel.app/api/attendance";
 ```
 
+> **Note**: The firmware uses `WiFiClientSecure` with `setInsecure()` for HTTPS. The BLE subsystem is temporarily shut down during HTTPS sends to free memory for SSL. Make sure the WiFi network allows outbound HTTPS connections.
+
 Upload to ESP32 via Arduino IDE.
 
 ---
@@ -153,12 +155,23 @@ Upload to ESP32 via Arduino IDE.
 
 ### 1. Check ESP32 Serial Monitor
 ```
-✓ WiFi connected
-✓ IP: 192.168.1.xxx
-✓ Web server started
-✓ RTC initialized
-Scanning for beacons...
-✓ Attendance sent: 1P
+=== ESP32 Attendance v2.0 ===
+RTC OK
+WiFi OK
+192.168.88.24
+Time synced - Internet OK
+Web server started
+
+========== SCAN ==========
+02:43 PM | Period: 3
+Found 2 beacon(s)
+[1P] Mathumitha R: PRESENT (BEACON)
+[2P] Lipsa Sahoo: PRESENT (BEACON)
+BLE off - Free heap: 175956 bytes
+  POST OK (200): Mathumitha R
+  POST OK (200): Lipsa Sahoo
+BLE on - Free heap: 174444 bytes
+Next scan in 1 min
 ```
 
 ### 2. Check Vercel Logs
@@ -187,7 +200,16 @@ If you see CORS errors in browser console:
 2. Check Vercel function logs
 3. Verify `api/attendance.js` is in project root
 
-### ESP32 Can't Connect
+### ESP32 Can't POST (connection refused)
+
+1. Check WiFi credentials match a network with internet access
+2. Verify free heap > 50KB in Serial Monitor (after "BLE off")
+3. If heap is low, ensure `BLEDevice::deinit(true)` is called before HTTPS
+4. Test the network: run `curl https://your-api.vercel.app/api/attendance` from a laptop on the same network
+5. Some mobile hotspots block HTTPS — try a home WiFi or different hotspot
+6. Verify `WiFiClientSecure` with `setInsecure()` is used in the code
+
+### ESP32 Can't Connect to WiFi
 
 1. Check WiFi credentials
 2. Verify SERVER_URL matches Vercel deployment
@@ -212,7 +234,9 @@ BLE-Attendance-system/
 ├── index.html            # ← GitHub Pages serves this
 ├── vercel.json           # ← Vercel configuration
 ├── package.json          # ← Node.js dependencies
-├── esp32_ble_scanner.ino # ← Upload to ESP32
+├── esp32_attendance_optimized.ino  # ← Upload to ESP32
+├── esp32_code_explanation.md       # Code walkthrough
+├── debugging_walkthrough.md        # HTTPS debugging guide
 └── README.md
 ```
 

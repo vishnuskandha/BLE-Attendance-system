@@ -59,21 +59,23 @@ The system now includes an **AI-powered security feature** that uses your webcam
 ```
 BLE-Attendance-system/
 ├── api/
-│   ├── attendance.js       # Vercel serverless function (POST/GET attendance)
-│   └── students.js         # Students list API
-├── backup/
-│   └── index_mordern.html  # Backup of website
-├── .github/
-│   └── copilot-instructions.md  # AI coding guidelines
-├── index.html              # Main web application (includes AI Security)
-├── esp32_ble_scanner.ino   # ESP32 firmware
-├── vercel.json             # Vercel configuration
-├── package.json            # Node.js dependencies
-├── DEPLOYMENT.md           # Complete deployment guide
-├── ESP32_SETUP_GUIDE.md    # Hardware setup instructions
-├── API_DOCUMENTATION.md    # API reference
-├── HARDWARE_GUIDE.md       # Hardware assembly guide
-└── README.md               # This file
+│   ├── attendance.js              # Vercel serverless function (POST/GET attendance)
+│   └── students.js                # Students list API
+├── esp32_ble_scanner/
+│   └── esp32_ble_scanner.ino      # Original ESP32 firmware (template)
+├── esp32_attendance_optimized.ino  # ESP32 firmware v2.0 (production)
+├── index.html                     # Main web application (includes AI Security)
+├── vercel.json                    # Vercel configuration
+├── package.json                   # Node.js dependencies
+├── esp32_code_explanation.md      # Detailed code walkthrough
+├── esp32_code_explanation.pdf     # PDF version of code walkthrough
+├── debugging_walkthrough.md       # HTTPS debugging journey
+├── debugging_walkthrough.pdf      # PDF version of debugging walkthrough
+├── DEPLOYMENT.md                  # Complete deployment guide
+├── ESP32_SETUP_GUIDE.md           # Hardware setup instructions
+├── API_DOCUMENTATION.md           # API reference
+├── HARDWARE_GUIDE.md              # Hardware assembly guide
+└── README.md                      # This file
 ```
 
 ## 🚀 Quick Start
@@ -83,7 +85,7 @@ BLE-Attendance-system/
 
 ### 2. Configure & Upload ESP32
 
-1. Update `esp32_ble_scanner.ino`:
+1. Update `esp32_attendance_optimized.ino`:
    ```cpp
    const char* WIFI_SSID = "Your-WiFi";
    const char* WIFI_PASSWORD = "Your-Password";
@@ -112,6 +114,8 @@ The AI security module is already integrated. To use it:
 | **[ESP32_SETUP_GUIDE.md](ESP32_SETUP_GUIDE.md)** | ESP32 hardware setup, wiring, and configuration |
 | **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** | API endpoints, request/response formats, examples |
 | **[HARDWARE_GUIDE.md](HARDWARE_GUIDE.md)** | Component list, assembly, troubleshooting |
+| **[esp32_code_explanation.md](esp32_code_explanation.md)** | Line-by-line code walkthrough with memory management |
+| **[debugging_walkthrough.md](debugging_walkthrough.md)** | HTTPS debugging journey & root cause analysis |
 
 ## 🔧 Hardware Requirements
 
@@ -125,13 +129,15 @@ The AI security module is already integrated. To use it:
 
 ## 🎯 Key Features
 
-### ESP32 Firmware
+### ESP32 Firmware (v2.0)
 - ✅ 1-minute scan intervals
-- ✅ DS3231 RTC integration
+- ✅ DS3231 RTC integration with web-based time setting
 - ✅ Local web server for permissions
 - ✅ Auto-present during on-duty time
 - ✅ Student ID coding (1P, 1A, 2P, 2A)
-- ✅ HTTP POST to cloud API
+- ✅ **HTTPS POST** to Vercel API via `WiFiClientSecure`
+- ✅ **BLE/SSL memory management** — deinit BLE before HTTPS, reinit after
+- ✅ NTP connectivity diagnostics on boot
 
 ### Web Application
 - ✅ Modern glassmorphism design
@@ -226,7 +232,13 @@ curl -X POST https://your-project.vercel.app/api/attendance \
 ### Test ESP32
 1. Power on ESP32
 2. Check Serial Monitor (115200 baud)
-3. Look for: `✓ Attendance sent: 1P`
+3. Look for:
+   ```
+   BLE off - Free heap: 175956 bytes
+     POST OK (200): Mathumitha R
+     POST OK (200): Lipsa Sahoo
+   BLE on - Free heap: 174444 bytes
+   ```
 
 ## 🛠️ Troubleshooting
 
@@ -235,10 +247,13 @@ curl -X POST https://your-project.vercel.app/api/attendance \
 - ✅ Open browser Console (F12) for errors
 - ✅ Verify CORS settings in Vercel
 
-### ESP32 not posting
+### ESP32 not posting (HTTPS)
 - ✅ Check WiFi credentials
+- ✅ Ensure network allows outbound HTTPS (not all hotspots do)
 - ✅ Verify SERVER_URL matches Vercel deployment
-- ✅ Test API manually with curl
+- ✅ Check free heap > 50KB (Serial Monitor shows heap after BLE off)
+- ✅ If `connection refused`: BLE may not be releasing memory — verify `BLEDevice::deinit(true)` is called
+- ✅ Test API manually with `curl`
 
 ### Beacons not detected
 - ✅ Check beacon batteries
@@ -295,4 +310,4 @@ For issues and questions:
 
 **Made with ❤️ for Smart Campus Management**
 
-**Last Updated**: January 31, 2026 | **Version**: 2.0.0 (with AI Security)
+**Last Updated**: February 13, 2026 | **Version**: 2.1.0 (BLE/SSL Memory Management + AI Security)

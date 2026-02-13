@@ -12,7 +12,9 @@ This document describes the HTTP API used by the ESP32 to post attendance data t
 
 Receives attendance records from ESP32 scanner.
 
-**URL**: `http://YOUR_SERVER:3000/api/attendance`
+**URL**: `https://ble-attendance-system-pink.vercel.app/api/attendance`
+
+> **ESP32 Note**: The firmware uses `WiFiClientSecure` with `setInsecure()` for HTTPS. BLE is temporarily shut down before sending to free ~130KB RAM for SSL buffers.
 
 **Method**: `POST`
 
@@ -420,5 +422,5 @@ CREATE TABLE attendance (
 
 ---
 
-**Last Updated**: January 2, 2026  
-**Version**: 1.0
+**Last Updated**: February 13, 2026  
+**Version**: 2.0

@@ -313,6 +313,18 @@ Test at different distances:
 3. Set threshold 5-10 dBm lower
 4. Test false positives/negatives
 
+### ESP32 Memory Notes
+
+| Resource | Usage |
+|---|---|
+| BLE subsystem | ~130KB RAM |
+| WiFi + TCP | ~40KB RAM |
+| SSL/TLS buffers | ~50KB needed |
+| Free (BLE active) | ~45KB |
+| Free (BLE off) | ~175KB |
+
+The firmware (`esp32_attendance_optimized.ino`) time-shares BLE and SSL: it deinitializes BLE before HTTPS sends, then reinitializes it for the next scan.
+
 ---
 
 ## 🛡️ Troubleshooting Hardware
@@ -442,5 +454,5 @@ Detection Range: 5-10 meters
 
 ---
 
-**Last Updated**: January 2, 2026  
+**Last Updated**: February 13, 2026  
 **Hardware Version**: 1.0

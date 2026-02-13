@@ -1,0 +1,31 @@
+# Node
+node_modules/
+package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Generated PDFs (regenerate from .md sources)
+*.pdf
+
+# ML models and datasets (too large for Git)
+*.pt
+*.pth
+*.onnx
+*.tflite
+Id card Detection*/
+
+# Backups
+backup/
+
+# Old/deprecated files
+index_old.html
+
+# Logs
+*.log

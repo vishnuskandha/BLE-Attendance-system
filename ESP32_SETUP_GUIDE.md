@@ -110,9 +110,11 @@ const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";  // Your WiFi password
 
 ### Step 2: Set Server URL
 ```cpp
-const char* SERVER_URL = "http://192.168.1.100:3000/api/attendance";
+const char* SERVER_URL = "https://your-project.vercel.app/api/attendance";
 ```
-Replace `192.168.1.100` with your server's IP address.
+Replace with your Vercel deployment URL. The ESP32 uses `WiFiClientSecure` with `setInsecure()` for HTTPS.
+
+> **⚠️ Important**: The network you connect to must allow outbound HTTPS connections. Some mobile hotspots and institutional networks block this. Test with `curl` from a laptop on the same network first.
 
 ### Step 3: Configure Location
 ```cpp
@@ -140,7 +142,9 @@ const int RSSI_THRESHOLD = -80;    // Signal strength (-100 to -30 dBm)
 ### 1. **Automatic BLE Scanning** (Every 1 Minute)
 - Scans for registered student beacons
 - Detects presence based on signal strength
-- Sends attendance data automatically
+- **Deinitializes BLE** after scanning to free ~130KB RAM
+- Sends attendance data via HTTPS
+- **Reinitializes BLE** for the next scan cycle
 
 ### 2. **RTC Time Tracking**
 - Accurate date and time using DS3231
@@ -180,9 +184,9 @@ Each student has a unique ID code:
 
 ### System Flow
 ```
-┌────────────────────────────────────────────────────────────┐
-│                    EVERY 1 MINUTE                          │
-└────────────────────────────────────────────────────────────┘
+ ┌────────────────────────────────────────────────────────────┐
+ │                    EVERY 1 MINUTE                          │
+ └────────────────────────────────────────────────────────────┘
                             │
                             ▼
         ┌───────────────────────────────────┐
@@ -193,30 +197,32 @@ Each student has a unique ID code:
                         │
                         ▼
         ┌───────────────────────────────────┐
-        │   2. Check Each Student           │
-        │   - Beacon detected? YES/NO       │
-        │   - On-duty active? YES/NO        │
+        │   2. Collect Results              │
+        │   - Store present/absent in array │
+        │   - Check on-duty permissions     │
         └───────────────┬───────────────────┘
                         │
                         ▼
         ┌───────────────────────────────────┐
-        │   3. Determine Status             │
-        │   Present = Beacon OR On-duty     │
-        │   Absent = Neither condition met  │
+        │   3. BLEDevice::deinit(true)      │
+        │   - Shut down BLE completely      │
+        │   - Free ~130KB RAM for SSL       │
+        │   - Heap: 45KB → 175KB            │
         └───────────────┬───────────────────┘
                         │
                         ▼
         ┌───────────────────────────────────┐
-        │   4. Send to Server (HTTP POST)   │
-        │   {                               │
-        │     "studentId": 1,               │
-        │     "code": "1P",                 │
-        │     "status": "Present",          │
-        │     "onDuty": false,              │
-        │     "period": 2,                  │
-        │     "date": "02-01-2026",         │
-        │     "time": "10:45 AM"            │
-        │   }                               │
+        │   4. HTTPS POST (WiFiClientSecure)│
+        │   - SSL needs ~50KB heap          │
+        │   - Send each student's data      │
+        │   - POST OK (200) confirms        │
+        └───────────────┬───────────────────┘
+                        │
+                        ▼
+        ┌───────────────────────────────────┐
+        │   5. initBLE() — Restart BLE      │
+        │   - Reinitialize for next scan    │
+        │   - Heap drops back to ~45KB      │
         └───────────────────────────────────┘
 ```
 
@@ -269,13 +275,15 @@ Each student has a unique ID code:
 
 ## 🚀 First Time Setup
 
-1. **Wire the RTC module** to ESP32
-2. **Upload the code** via Arduino IDE
-3. **Open Serial Monitor** (115200 baud)
-4. **Note the IP address** displayed
-5. **Access web interface**: `http://[ESP32_IP]`
-6. **Test beacon detection** by bringing ID cards near
-7. **Grant test permission** via web interface
+1. **Wire the RTC module**
+2. **Load `esp32_attendance_optimized.ino`**
+3. Configure WiFi credentials
+4. Upload code
+5. Open Serial Monitor (115200 baud)
+6. **Note the IP address** displayed
+7. **Access web interface**: `http://[ESP32_IP]`
+8. **Test beacon detection** by bringing ID cards near
+9. **Grant test permission** via web interface
 
 ---
 
@@ -286,7 +294,20 @@ Each student has a unique ID code:
 - Ensure RTC module has power (LED on)
 - Try swapping SDA/SCL if not detected
 
-### WiFi Not Connecting
+### Problem: HTTPS POST Fails (connection refused)
+
+**Symptoms**:
+- Serial shows `POST FAIL (connection refused)`
+- NTP time sync works but HTTPS doesn't
+
+**Solutions**:
+1. Check free heap in Serial Monitor — needs >50KB when BLE is off
+2. Ensure `BLEDevice::deinit(true)` is called before HTTPS
+3. Verify network allows outbound HTTPS (test with curl from laptop)
+4. Try a different WiFi network (some hotspots block HTTPS)
+5. The ESP32 Core v3.x needs `WiFiClientSecure` with `setInsecure()`
+
+### Problem: WiFi Disconnecting
 - Verify SSID and password
 - Check 2.4GHz WiFi (ESP32 doesn't support 5GHz)
 - Move closer to router
@@ -313,4 +334,4 @@ Each student has a unique ID code:
 
 ---
 
-**Last Updated**: January 2, 2026
+**Last Updated**: February 13, 2026
