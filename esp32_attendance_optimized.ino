@@ -19,7 +19,7 @@
 const char *WIFI_SSID = "Madhu";
 const char *WIFI_PASSWORD = "12345678";
 const char *SERVER_URL =
-    "https://ble-attendance-system.vercel.app/api/attendance";
+    "https://ble-attendance-system-pink.vercel.app/api/attendance";
 const char *LOCATION_ID = "CLASSROOM_A";
 const char *DEPARTMENT = "IT-B";
 
