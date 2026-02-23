@@ -1,10 +1,6 @@
-// Vercel Serverless Function - Attendance API
-// Deploy to Vercel: https://vercel.com
+import { kv } from '@vercel/kv';
 
-// In-memory storage (for demo - use database in production)
-let attendanceRecords = [];
-
-export default function handler(req, res) {
+export default async function handler(req, res) {
   // Enable CORS for GitHub Pages
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -41,6 +37,9 @@ export default function handler(req, res) {
         });
       }
 
+      // Fetch existing records from KV
+      let attendanceRecords = await kv.get('attendance_records') || [];
+
       // Check for duplicate in same period
       const existingIndex = attendanceRecords.findIndex(r =>
         r.studentId === record.studentId &&
@@ -52,7 +51,6 @@ export default function handler(req, res) {
         const existingRecord = attendanceRecords[existingIndex];
 
         // "Once Present, Always Present" logic:
-        // If they are already Present, don't let an Absent report overwrite it.
         if (existingRecord.status === 'Present' && record.status === 'Absent') {
           return res.status(200).json({
             success: true,
@@ -61,41 +59,46 @@ export default function handler(req, res) {
           });
         }
 
-        // Update existing record (e.g., updating Absent to Present, or refreshing Present)
+        // Update existing record
         attendanceRecords[existingIndex] = record;
       } else {
         // Add new record
         attendanceRecords.push(record);
       }
 
-      // Keep only last 1000 records (memory limit)
-      if (attendanceRecords.length > 1000) {
-        attendanceRecords = attendanceRecords.slice(-1000);
+      // Keep only last 2000 records for KV efficiency
+      if (attendanceRecords.length > 2000) {
+        attendanceRecords = attendanceRecords.slice(-2000);
       }
 
-      console.log(`✅ Attendance: ${record.name} - ${record.code}`);
+      // Save back to KV
+      await kv.set('attendance_records', attendanceRecords);
+
+      console.log(`✅ Attendance (KV): ${record.name} - ${record.code}`);
 
       return res.status(200).json({
         success: true,
-        message: 'Attendance recorded',
+        message: 'Attendance recorded in database',
         recordId: record.id
       });
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error('KV Error (POST):', error);
       return res.status(500).json({
         success: false,
-        error: 'Server error'
+        error: 'Database error'
       });
     }
   }
 
-  // GET - Fetch attendance records
+  // GET - Fetch attendance records from KV
   if (req.method === 'GET') {
     try {
       const { date, studentId, irregularities } = req.query;
 
-      let filtered = [...attendanceRecords];
+      // Fetch all records from KV
+      let records = await kv.get('attendance_records') || [];
+      let filtered = [...records];
 
       // Filter by date
       if (date) {
@@ -122,10 +125,10 @@ export default function handler(req, res) {
       return res.status(200).json(filtered);
 
     } catch (error) {
-      console.error('Error:', error);
+      console.error('KV Error (GET):', error);
       return res.status(500).json({
         success: false,
-        error: 'Server error'
+        error: 'Database error'
       });
     }
   }
