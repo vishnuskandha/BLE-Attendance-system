@@ -1,4 +1,10 @@
-import { kv } from '@vercel/kv';
+import { createClient } from '@vercel/kv';
+
+// Initialize KV with the explicit credentials provided by the user
+const kv = createClient({
+  url: 'https://coherent-hound-17896.upstash.io', // Using standard Upstash REST URL format as a proxy for the direct connection
+  token: 'yxkNg5aQSuARBBJOxNUpy1upl0bGZchb', // Extracted from the provided redis:// URL
+});
 
 export default async function handler(req, res) {
   // Enable CORS for GitHub Pages
