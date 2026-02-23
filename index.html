@@ -1489,6 +1489,29 @@
         }
 
         // ============================================
+        // SMART PERSISTENCE LOGIC
+        // ============================================
+        // Tracks "Present" status for students locally to handle server restarts
+        let presenceMemory = JSON.parse(sessionStorage.getItem('presenceMemory') || '{}');
+
+        function saveToMemory(record) {
+            if (record.status === 'Present') {
+                const key = `${record.studentId}-${record.date}-${record.period}`;
+                presenceMemory[key] = record;
+                sessionStorage.setItem('presenceMemory', JSON.stringify(presenceMemory));
+            }
+        }
+
+        function getMergedRecord(record) {
+            const key = `${record.studentId}-${record.date}-${record.period}`;
+            const memorized = presenceMemory[key];
+            if (memorized && record.status !== 'Present') {
+                return { ...record, status: 'Present', clientSynthesized: true };
+            }
+            return record;
+        }
+
+        // ============================================
         // API DATA FETCHING FUNCTIONS
         // ============================================
 
@@ -1529,7 +1552,11 @@
 
                 // Clear and populate table
                 tbody.innerHTML = '';
-                data.forEach(record => {
+                data.forEach(rawRecord => {
+                    // Sync with memory
+                    saveToMemory(rawRecord);
+                    const record = getMergedRecord(rawRecord);
+
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-gradient-to-r hover:from-purple-50 hover:to-pink-50 transition-all duration-200';
 
@@ -1607,7 +1634,35 @@
                 }
 
                 tbody.innerHTML = '';
-                irregularities.forEach(record => {
+                
+                // Filter irregularities after syncing with memory
+                const mergedIrregularities = data
+                    .map(r => {
+                        saveToMemory(r); // Sync any seen data
+                        return getMergedRecord(r);
+                    })
+                    .filter(r => (r.status === 'Absent' || r.irregularity) && !presenceMemory[`${r.studentId}-${r.date}-${r.period}`]);
+
+                if (mergedIrregularities.length === 0) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="6" class="py-16 text-center">
+                                <div class="flex flex-col items-center justify-center">
+                                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-4">
+                                        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                    </div>
+                                    <p class="text-lg font-semibold text-gray-700 mb-2">No Irregularities Recorded</p>
+                                    <p class="text-sm text-gray-500">All students are following the attendance policy ✓</p>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                mergedIrregularities.forEach(record => {
                     const row = document.createElement('tr');
                     row.className = 'hover:bg-red-50 transition-all duration-200';
                     row.innerHTML = `
