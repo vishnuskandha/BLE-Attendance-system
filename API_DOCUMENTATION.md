@@ -2,7 +2,8 @@
 
 ## 📡 Overview
 
-This document describes the HTTP API used by the ESP32 to post attendance data to your server.
+This document describes the HTTP API used by the ESP32 to post attendance data to your server. 
+The backend utilizes a **Redis Enterprise** database (via `redis` npm package) to persist records reliably across serverless function invocations.
 
 ---
 

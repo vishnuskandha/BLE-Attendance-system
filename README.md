@@ -50,8 +50,12 @@ The system now includes an **AI-powered security feature** that uses your webcam
 │   ESP32     │ POST  │   Vercel    │  GET  │   Website   │
 │   Scanner   │──────>│   Backend   │<──────│(GitHub Pages)│
 │   + RTC     │ Data  │   API       │ Data  │ + AI Security│
-└─────────────┘       └─────────────┘       └─────────────┘
-                      Serverless Functions
+└─────────────┘       └──────┬──────┘       └─────────────┘
+                             │
+                      ┌──────▼──────┐
+                      │ Redis  DB   │
+                      │(Enterprise) │
+                      └─────────────┘
 ```
 
 ## 📦 Repository Structure
@@ -150,12 +154,12 @@ The AI security module is already integrated. To use it:
 - ✅ **🆕 Real-time person + ID detection**
 - ✅ **🆕 Violation capture & logging**
 
-### Vercel Backend
+### Vercel Backend & Database
 - ✅ Serverless architecture
 - ✅ CORS-enabled endpoints
-- ✅ JSON data storage
-- ✅ Query filtering (date, student, period)
-- ✅ Fast global CDN
+- ✅ **Persistent Storage via Redis Enterprise Cloud (Redislabs)**
+- ✅ Optimized query filtering (date, student, period)
+- ✅ Auto-trimming prevents database capacity limits
 
 ## 🛡️ Security Module Features
 
@@ -266,10 +270,14 @@ curl -X POST https://your-project.vercel.app/api/attendance \
 - ✅ Verify Roboflow API key is valid
 - ✅ Ensure HTTPS (required for camera access)
 
+### "Failed to Load Data" or API 404/500 Errors
+- ✅ **Vercel Domain Collision**: If Vercel assigns a `-pink` (or similar) suffix to your backend URL because the root name was taken by a previous deployment, ensure both the `index.html` and ESP32 code use the exact `-pink` domain, NOT the root domain.
+- ✅ **Redis Connection Issues**: Some Redis Enterprise nodes fail to link natively via the Vercel Dashboard ("Already connected" error). In this case, hardcode the `redis://...` URL into the `api/attendance.js` using the standard `redis` npm package rather than `@vercel/kv`.
+
 ## 📈 Future Enhancements
 
 - [x] **AI ID Card Detection** ✅ Implemented!
-- [ ] Database persistence (Vercel KV / MongoDB)
+- [x] **Database persistence** ✅ Implemented (Redis Enterprise)
 - [ ] Email notifications for absences
 - [ ] Real-time WebSocket updates
 - [ ] Mobile app (React Native)

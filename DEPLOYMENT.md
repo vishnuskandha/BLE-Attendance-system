@@ -80,6 +80,13 @@ curl -X POST https://your-project-name.vercel.app/api/attendance \
   -d '{"studentId":1,"code":"1P","name":"Test","status":"Present","date":"02-01-2026"}'
 ```
 
+### 🗄️ Step 1B: Configure Redis Database
+Your Vercel backend requires a Redis database to persist data.
+1. Create a free Redis database (e.g., via Redis Enterprise Cloud / Redislabs).
+2. Get the connection string: `redis://default:password@host:port`
+3. Update `api/attendance.js` to initialize the client with this URL using the `redis` npm package.
+*(Note: If the Vercel Dashboard Storage tab fails with "Already connected to target store", you must hardcode the URL in `api/attendance.js` as a fallback).*
+
 ---
 
 ## 🌐 Step 2: Deploy Frontend to GitHub Pages
@@ -221,6 +228,12 @@ If you see CORS errors in browser console:
 1. Check Actions tab for build status
 2. Clear browser cache
 3. Wait 2-3 minutes after push
+
+### Vercel Domain Misalignment ("Failed to load data")
+
+1. If Vercel detects a naming collision (e.g. you have two projects named `ble-attendance-system`), it will auto-append a suffix to the newest one (e.g. `ble-attendance-system-pink.vercel.app`).
+2. You **must** copy this exact appended domain from the Vercel Settings -> Domains page.
+3. Update both `SERVER_URL` in ESP32 and `API_BASE_URL` in `index.html` to reflect the appended domain.
 
 ---
 
