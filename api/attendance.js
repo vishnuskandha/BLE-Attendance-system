@@ -49,7 +49,19 @@ export default function handler(req, res) {
       );
 
       if (existingIndex >= 0) {
-        // Update existing record
+        const existingRecord = attendanceRecords[existingIndex];
+
+        // "Once Present, Always Present" logic:
+        // If they are already Present, don't let an Absent report overwrite it.
+        if (existingRecord.status === 'Present' && record.status === 'Absent') {
+          return res.status(200).json({
+            success: true,
+            message: 'Ignored - student already marked Present for this period',
+            recordId: existingRecord.id
+          });
+        }
+
+        // Update existing record (e.g., updating Absent to Present, or refreshing Present)
         attendanceRecords[existingIndex] = record;
       } else {
         // Add new record
