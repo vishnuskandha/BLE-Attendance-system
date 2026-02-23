@@ -1,12 +1,18 @@
-import { createClient } from '@vercel/kv';
+import { createClient } from 'redis';
 
-// Initialize KV with the explicit credentials provided by the user
-const kv = createClient({
-  url: 'https://coherent-hound-17896.upstash.io', // Using standard Upstash REST URL format as a proxy for the direct connection
-  token: 'yxkNg5aQSuARBBJOxNUpy1upl0bGZchb', // Extracted from the provided redis:// URL
+// Initialize Redis with the connection string provided by the user
+const redis = createClient({
+  url: 'redis://default:yxkNg5aQSuARBBJOxNUpy1upl0bGZchb@redis-17896.c263.us-east-1-2.ec2.cloud.redislabs.com:17896'
 });
 
+redis.on('error', (err) => console.log('Redis Client Error', err));
+
 export default async function handler(req, res) {
+  // Ensure Redis is connected before handling requests
+  if (!redis.isOpen) {
+    await redis.connect();
+  }
+
   // Enable CORS for GitHub Pages
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -43,8 +49,9 @@ export default async function handler(req, res) {
         });
       }
 
-      // Fetch existing records from KV
-      let attendanceRecords = await kv.get('attendance_records') || [];
+      // Fetch existing records from Redis
+      const rawAttendance = await redis.get('attendance_records');
+      let attendanceRecords = rawAttendance ? JSON.parse(rawAttendance) : [];
 
       // Check for duplicate in same period
       const existingIndex = attendanceRecords.findIndex(r =>
@@ -77,8 +84,8 @@ export default async function handler(req, res) {
         attendanceRecords = attendanceRecords.slice(-2000);
       }
 
-      // Save back to KV
-      await kv.set('attendance_records', attendanceRecords);
+      // Save back to Redis
+      await redis.set('attendance_records', JSON.stringify(attendanceRecords));
 
       console.log(`✅ Attendance (KV): ${record.name} - ${record.code}`);
 
@@ -102,8 +109,9 @@ export default async function handler(req, res) {
     try {
       const { date, studentId, irregularities } = req.query;
 
-      // Fetch all records from KV
-      let records = await kv.get('attendance_records') || [];
+      // Fetch all records from Redis
+      const rawRecords = await redis.get('attendance_records');
+      let records = rawRecords ? JSON.parse(rawRecords) : [];
       let filtered = [...records];
 
       // Filter by date
