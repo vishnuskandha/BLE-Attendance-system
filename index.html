@@ -1356,8 +1356,12 @@
             removeBtn?.addEventListener('click', () => {
                 activeFilters = {};
                 filtersVisible = false;
+                // Clear global date filter too
+                globalDateFilter = { from: null, to: null };
+                document.getElementById('fromDate').value = '';
+                document.getElementById('toDate').value = '';
                 updateFilterToggleVisibility();
-                filterTable();
+                fetchAttendanceData(); // Re-fetch to show all records
             });
 
             table.querySelectorAll('.filter-toggle').forEach(btn => {
@@ -1502,7 +1506,12 @@
 
             removeFilterBtn?.addEventListener('click', () => {
                 removeIrrFilters();
+                // Clear global date filter too
+                globalDateFilter = { from: null, to: null };
+                document.getElementById('fromDate').value = '';
+                document.getElementById('toDate').value = '';
                 removeFilterBtn?.classList.add('hidden');
+                fetchIrregularitiesData(); // Re-fetch to show all records
             });
         }
 
