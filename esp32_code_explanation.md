@@ -1,8 +1,8 @@
 # ESP32 BLE Attendance System — Code Explanation
 
 **File:** `esp32_attendance_optimized.ino`
-**Version:** 2.0 (Optimized with BLE/SSL Memory Management)
-**Date:** 13-Feb-2026
+**Version:** 2.1 (Unified Redis Enterprise + 14-Day Retention)
+**Date:** 24-Feb-2026
 
 ---
 
@@ -50,6 +50,7 @@ This ESP32-based attendance system automates student attendance tracking using B
 - **RTC Timekeeping:** DS3231 module with battery backup for accurate time
 - **Web Portal:** Staff can grant on-duty permissions via phone browser
 - **Memory Management:** BLE deinit/reinit cycle to allow SSL connections
+- **Data Retention:** Backend automatically prunes records older than 14 days
 
 ---
 
@@ -262,6 +263,8 @@ void sendAttendance(const StudentBeacon &s, bool present, bool onDuty) {
   http.end();
 }
 ```
+
+**Retention Handling:** Note that the ESP32 doesn't need to worry about database size. The backend API handles the "14-day rolling window" automatically whenever it receives a POST.
 
 **Critical:** This function is called **after** BLE has been shut down (see the main loop). This is because SSL requires ~50KB+ of free RAM, and BLE uses ~130KB. Both cannot run simultaneously.
 

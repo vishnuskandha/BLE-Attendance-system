@@ -110,7 +110,7 @@ const char* WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";  // Your WiFi password
 
 ### Step 2: Set Server URL
 ```cpp
-const char* SERVER_URL = "https://your-project.vercel.app/api/attendance";
+const char* SERVER_URL = "https://ble-attendance-system-pink.vercel.app/api/attendance";
 ```
 Replace with your Vercel deployment URL. The ESP32 uses `WiFiClientSecure` with `setInsecure()` for HTTPS.
 
@@ -160,7 +160,13 @@ Staff can:
 - Choose period/half-day/full-day
 - View current student status
 
-### 4. **Smart Attendance Logic**
+### 4. **Smart Data Retention (14 Days)**
+The backend automatically maintains a **rolling 14-day window**:
+- Data older than 2 weeks is automatically removed.
+- Ensures the system stays fast and stays within free-tier limits.
+- The dashboard "Date Range" tool allows you to view any segment of this 2-week history.
+
+### 5. **Smart Attendance Logic**
 ```
 Student Present IF:
   ✓ Beacon detected in range, OR
@@ -334,4 +340,4 @@ Each student has a unique ID code:
 
 ---
 
-**Last Updated**: February 13, 2026
+**Last Updated**: February 24, 2026

@@ -421,7 +421,15 @@ CREATE TABLE attendance (
 );
 ```
 
+### 💾 Persistent Storage
+The system uses **Redis Enterprise** for robust, persistent data storage. Even if the Vercel serverless function restarts, your attendance data remains safe.
+
+### 🧹 14-Day Rolling Retention
+To maintain performance and stay within free-tier database limits, a **rolling 14-day retention policy** is enforced:
+- Every time a new record is `POST`ed, the system automatically removes all entries older than 2 weeks.
+- This ensures the "Last Week" vs "This Week" history is always available without the database growing indefinitely.
+
 ---
 
-**Last Updated**: February 13, 2026  
-**Version**: 2.0
+**Last Updated**: February 24, 2026  
+**Version**: 2.1 (Unified Redis Enterprise + 14-Day Retention)

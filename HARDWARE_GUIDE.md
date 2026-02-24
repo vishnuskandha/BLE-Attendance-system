@@ -323,7 +323,7 @@ Test at different distances:
 | Free (BLE active) | ~45KB |
 | Free (BLE off) | ~175KB |
 
-The firmware (`esp32_attendance_optimized.ino`) time-shares BLE and SSL: it deinitializes BLE before HTTPS sends, then reinitializes it for the next scan.
+The firmware (`esp32_attendance_optimized.ino`) time-shares BLE and SSL: it deinitializes BLE before HTTPS sends, then reinitializes it for the next scan. **Data Retention**: The backend maintains a rolling 14-day history, preventing database bloat.
 
 ---
 
@@ -454,5 +454,5 @@ Detection Range: 5-10 meters
 
 ---
 
-**Last Updated**: February 13, 2026  
+**Last Updated**: February 24, 2026  
 **Hardware Version**: 1.0
