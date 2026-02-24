@@ -79,7 +79,16 @@ export default async function handler(req, res) {
         attendanceRecords.push(record);
       }
 
-      // Keep only last 2000 records for KV efficiency
+      // --- 14-DAY ROLLING RETENTION CLEANUP ---
+      const fourteenDaysAgo = new Date();
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+
+      attendanceRecords = attendanceRecords.filter(r => {
+        if (!r.receivedAt) return true; // Keep records without timestamp just in case
+        return new Date(r.receivedAt) > fourteenDaysAgo;
+      });
+
+      // Keep only last 2000 records as a secondary safeguard
       if (attendanceRecords.length > 2000) {
         attendanceRecords = attendanceRecords.slice(-2000);
       }

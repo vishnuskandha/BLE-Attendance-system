@@ -273,6 +273,7 @@ curl -X POST https://your-project.vercel.app/api/attendance \
 ### "Failed to Load Data" or API 404/500 Errors
 - ✅ **Vercel Domain Collision**: If Vercel assigns a `-pink` (or similar) suffix to your backend URL because the root name was taken by a previous deployment, ensure both the `index.html` and ESP32 code use the exact `-pink` domain, NOT the root domain.
 - ✅ **Redis Connection Issues**: Some Redis Enterprise nodes fail to link natively via the Vercel Dashboard ("Already connected" error). In this case, hardcode the `redis://...` URL into the `api/attendance.js` using the standard `redis` npm package rather than `@vercel/kv`.
+- ✅ **Data Retention**: Attendance data is automatically kept for a **rolling 14-day window**. Every time a new record is saved, the system automatically removes entries older than 2 weeks to keep the dashboard fast and stay within free-tier database limits.
 
 ## 📈 Future Enhancements
 

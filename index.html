@@ -323,12 +323,12 @@
                                 <div class="grid grid-cols-2 gap-3">
                                     <div>
                                         <label class="block text-xs text-gray-600 mb-1">From</label>
-                                        <input type="date" id="fromDate" max="2026-01-02"
+                                        <input type="date" id="fromDate"
                                             class="w-full px-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all text-sm" />
                                     </div>
                                     <div>
                                         <label class="block text-xs text-gray-600 mb-1">To</label>
-                                        <input type="date" id="toDate" max="2026-01-02"
+                                        <input type="date" id="toDate"
                                             class="w-full px-3 py-2 bg-gray-50 border-2 border-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all text-sm" />
                                     </div>
                                 </div>
@@ -981,11 +981,29 @@
             showSection(k);
         });
 
+        let globalDateFilter = { from: null, to: null };
+
         document.getElementById('applyRangeBtn')?.addEventListener('click', () => {
             const value = document.getElementById('sheetSelect')?.value;
+            const from = document.getElementById('fromDate').value;
+            const to = document.getElementById('toDate').value;
+
+            globalDateFilter = {
+                from: from ? new Date(from) : null,
+                to: to ? new Date(to) : null
+            };
+
             if (value === 'attendance') showSection('attendance');
             else if (value === 'irregular') showSection('irregular');
+            else alert('Please select a sheet first');
         });
+
+        // Helper to parse DD-MM-YYYY to Date object
+        function parseDate(dateStr) {
+            if (!dateStr) return null;
+            const [d, m, y] = dateStr.split('-');
+            return new Date(y, m - 1, d);
+        }
 
         // ============================================
         // SECURITY & AI LOGIC (ROBOFLOW POWERED)
@@ -1536,7 +1554,19 @@
                 const response = await fetch(ATTENDANCE_API);
                 if (!response.ok) throw new Error('API request failed');
 
-                const data = await response.json();
+                let data = await response.json();
+
+                // Apply Global Date Range Filter
+                if (globalDateFilter.from || globalDateFilter.to) {
+                    data = data.filter(record => {
+                        const recDate = parseDate(record.date);
+                        if (!recDate) return true;
+
+                        if (globalDateFilter.from && recDate < globalDateFilter.from) return false;
+                        if (globalDateFilter.to && recDate > globalDateFilter.to) return false;
+                        return true;
+                    });
+                }
 
                 if (!data || data.length === 0) {
                     tbody.innerHTML = `
@@ -1608,10 +1638,24 @@
             if (!tbody) return;
 
             try {
-                const response = await fetch(`${ATTENDANCE_API}?irregularities=true`);
+                const response = await fetch(`${ATTENDANCE_API}`);
                 if (!response.ok) throw new Error('API request failed');
 
-                const data = await response.json();
+                const rawData = await response.json();
+
+                // Apply Global Date Range Filter
+                let data = rawData;
+                if (globalDateFilter.from || globalDateFilter.to) {
+                    data = data.filter(record => {
+                        const recDate = parseDate(record.date);
+                        if (!recDate) return true;
+
+                        if (globalDateFilter.from && recDate < globalDateFilter.from) return false;
+                        if (globalDateFilter.to && recDate > globalDateFilter.to) return false;
+                        return true;
+                    });
+                }
+
                 const irregularities = data.filter(r => r.status === 'Absent' || r.irregularity);
 
                 if (!irregularities || irregularities.length === 0) {
