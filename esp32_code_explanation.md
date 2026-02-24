@@ -1,7 +1,7 @@
 # ESP32 BLE Attendance System — Code Explanation
 
 **File:** `esp32_attendance_optimized.ino`
-**Version:** 2.1 (Unified Redis Enterprise + 14-Day Retention)
+**Version:** 3.0 (Unified Redis Enterprise + 14-Day Retention)
 **Date:** 24-Feb-2026
 
 ---

@@ -1,6 +1,6 @@
 {
   "name": "ble-attendance-api",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "BLE Attendance System - Vercel Serverless Backend",
   "main": "api/attendance.js",
   "scripts": {

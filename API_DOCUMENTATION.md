@@ -432,4 +432,4 @@ To maintain performance and stay within free-tier database limits, a **rolling 1
 ---
 
 **Last Updated**: February 24, 2026  
-**Version**: 2.1 (Unified Redis Enterprise + 14-Day Retention)
+**Version**: 3.0 (Unified Redis Enterprise + 14-Day Retention)

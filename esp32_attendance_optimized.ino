@@ -1,5 +1,6 @@
 /*
  * ESP32 BLE Attendance Scanner with RTC & Web Interface (OPTIMIZED)
+ * Version: 3.0.0 (Unified Update)
  * Reduced memory footprint for compilation
  */
 

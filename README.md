@@ -319,4 +319,4 @@ For issues and questions:
 
 **Made with ❤️ for Smart Campus Management**
 
-**Last Updated**: February 13, 2026 | **Version**: 2.1.0 (BLE/SSL Memory Management + AI Security)
+**Last Updated**: February 24, 2026 | **Version**: 3.0.0 (Redis Enterprise Unified + 14-Day Rolling Retention)
