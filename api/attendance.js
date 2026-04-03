@@ -1,18 +1,13 @@
 import { createClient } from 'redis';
 
-// Initialize Redis with the connection string provided by the user
-const redis = createClient({
-  url: 'redis://default:yxkNg5aQSuARBBJOxNUpy1upl0bGZchb@redis-17896.c263.us-east-1-2.ec2.cloud.redislabs.com:17896'
-});
+const redisUrl = process.env.REDIS_URL || process.env.KV_URL;
+const redis = redisUrl ? createClient({ url: redisUrl }) : null;
 
-redis.on('error', (err) => console.log('Redis Client Error', err));
+if (redis) {
+  redis.on('error', (err) => console.log('Redis Client Error', err));
+}
 
 export default async function handler(req, res) {
-  // Ensure Redis is connected before handling requests
-  if (!redis.isOpen) {
-    await redis.connect();
-  }
-
   // Enable CORS for GitHub Pages
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -21,6 +16,18 @@ export default async function handler(req, res) {
   // Handle preflight
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
+  }
+
+  if (!redis) {
+    return res.status(500).json({
+      success: false,
+      error: 'Server misconfiguration: REDIS_URL/KV_URL not set'
+    });
+  }
+
+  // Ensure Redis is connected before handling requests
+  if (!redis.isOpen) {
+    await redis.connect();
   }
 
   // POST - Receive attendance from ESP32
@@ -130,7 +137,10 @@ export default async function handler(req, res) {
 
       // Filter by student
       if (studentId) {
-        filtered = filtered.filter(r => r.studentId === parseInt(studentId));
+        const parsedStudentId = Number(studentId);
+        if (!Number.isNaN(parsedStudentId)) {
+          filtered = filtered.filter(r => r.studentId === parsedStudentId);
+        }
       }
 
       // Filter irregularities only

@@ -1,8 +1,12 @@
 
 const { createClient } = require('redis');
 
-// Connection string from api/attendance.js
-const REDIS_URL = 'redis://default:yxkNg5aQSuARBBJOxNUpy1upl0bGZchb@redis-17896.c263.us-east-1-2.ec2.cloud.redislabs.com:17896';
+const REDIS_URL = process.env.REDIS_URL || process.env.KV_URL;
+
+if (!REDIS_URL) {
+    console.error('Missing REDIS_URL/KV_URL environment variable');
+    process.exit(1);
+}
 
 const client = createClient({
     url: REDIS_URL
