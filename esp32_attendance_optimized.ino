@@ -17,8 +17,8 @@
 #include <Wire.h>
 
 // ---------- CONFIGURE THESE ----------
-const char *WIFI_SSID = "Madhu";
-const char *WIFI_PASSWORD = "12345678";
+const char *WIFI_SSID = "YOUR_WIFI_SSID";
+const char *WIFI_PASSWORD = "YOUR_WIFI_PASSWORD";
 const char *SERVER_URL =
     "https://ble-attendance-system-pink.vercel.app/api/attendance";
 const char *LOCATION_ID = "CLASSROOM_A";

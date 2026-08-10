@@ -6,7 +6,7 @@ This system requires **two deployments**:
 1. **Frontend (Website)** → GitHub Pages (FREE)
 2. **Backend (API)** → Vercel (FREE)
 
-**NEW in v2.0**: The frontend now includes an **AI-powered Security module** that uses your webcam for ID card detection (no additional deployment needed).
+**Current version**: v3.0.0 - the frontend includes an **AI-powered Security module** that uses your webcam for ID card detection (no additional deployment needed).
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -80,12 +80,14 @@ curl -X POST https://your-project-name.vercel.app/api/attendance \
   -d '{"studentId":1,"code":"1P","name":"Test","status":"Present","date":"02-01-2026"}'
 ```
 
-### 🗄️ Step 1B: Configure Redis Database
+### Step 1B: Configure Redis Database
 Your Vercel backend requires a Redis database to persist data.
 1. Create a free Redis database (e.g., via Redis Enterprise Cloud / Redislabs).
 2. Get the connection string: `redis://default:password@host:port`
-3. Update `api/attendance.js` to initialize the client with this URL using the `redis` npm package.
-*(Note: If the Vercel Dashboard Storage tab fails with "Already connected to target store", you must hardcode the URL in `api/attendance.js` as a fallback).*
+3. In the Vercel project, go to **Settings -> Environment Variables** and add it as
+   `REDIS_URL` (or `KV_URL`). `api/attendance.js` reads one of these at runtime, so no
+   code changes are required. Use a secret environment variable - never hardcode the
+   connection string in source.
 
 ---
 
@@ -114,13 +116,14 @@ https://YOUR_USERNAME.github.io/BLE-Attendance-system/
 
 ### Update index.html
 
-Open `index.html` and find this section (near line 596):
+Open `index.html` and find the `API_BASE_URL` constant (near the top of the script
+section, around line 860):
 
 ```javascript
 // ============================================
 // API CONFIGURATION - UPDATE THIS URL!
 // ============================================
-const API_BASE_URL = 'https://ble-attendance-api.vercel.app';
+const API_BASE_URL = 'https://ble-attendance-system-pink.vercel.app';
 ```
 
 Replace with your Vercel URL:
@@ -243,13 +246,13 @@ If you see CORS errors in browser console:
 BLE-Attendance-system/
 ├── api/
 │   ├── attendance.js     # ← Vercel will deploy this
-│   └── students.js       # ← Vercel will deploy this
-├── index.html            # ← GitHub Pages serves this
+│   ├── students.js       # ← Vercel will deploy this
+│   └── debug-kv.js       # ← Vercel diagnostics (disabled in production)
+├── index.html            # ← Frontend (served by Vercel rewrite or GitHub Pages)
 ├── vercel.json           # ← Vercel configuration
 ├── package.json          # ← Node.js dependencies
 ├── esp32_attendance_optimized.ino  # ← Upload to ESP32
 ├── esp32_code_explanation.md       # Code walkthrough
-├── debugging_walkthrough.md        # HTTPS debugging guide
 └── README.md
 ```
 
