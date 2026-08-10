@@ -1,322 +1,142 @@
 # BLE Attendance System
 
-🎓 A complete IoT attendance tracking system using ESP32, BLE beacons, AI-powered security with ID card detection, and cloud deployment.
+![CI](https://github.com/vishnuskandha/BLE-Attendance-system/actions/workflows/ci.yml/badge.svg)
+![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
-## 🌟 Features
+A complete IoT classroom-attendance system. An **ESP32** scans for student BLE beacons,
+resolves them against a student registry, and reports attendance over HTTPS to a
+**Vercel serverless API**. The API persists records to **Redis** and serves them to a
+responsive **web dashboard** that displays live attendance, filterable reports, and an
+optional **AI-powered ID card check** running in the browser.
 
-- **Automatic BLE Scanning** - ESP32 scans for student beacons every minute
-- **Real-time Tracking** - Live attendance updates via cloud API
-- **🆕 AI Security Monitoring** - Roboflow-powered ID card detection with webcam
-- **Staff Permissions** - Local web interface for on-duty/permission management
-- **Smart Detection** - Auto-marks present during approved absence periods
-- **Modern Web Interface** - Responsive dashboard with filters and reports
-- **Cloud-Powered** - Serverless backend on Vercel, frontend on GitHub Pages
-
-## 🛡️ NEW: AI-Powered Security Module
-
-The system now includes an **AI-powered security feature** that uses your webcam and a pre-trained Roboflow model to:
-
-- ✅ **Detect persons** entering the monitored area
-- ✅ **Verify ID cards** are worn/visible
-- ✅ **Alert violations** when a person is detected without an ID card
-- ✅ **Capture evidence** automatically after 3 seconds of violation
-
-### How It Works
+## System Architecture
 
 ```
-┌─────────────┐       ┌─────────────┐       ┌─────────────┐
-│   Webcam    │ Frame │  Roboflow   │Result │   Decision  │
-│   (Live)    │──────>│  AI Model   │──────>│   Engine    │
-│             │       │  (Browser)  │       │             │
-└─────────────┘       └─────────────┘       └─────────────┘
-                                                   │
-                            ┌──────────────────────┼──────────────────────┐
-                            │                      │                      │
-                            ▼                      ▼                      ▼
-                      🟢 Verified            🔴 Violation            🔵 Scanning
-                    Person + ID Card     Person without ID        No person detected
++-------------+   HTTPS POST   +------------------+   JSON GET   +-----------------+
+|   ESP32     |--------------->|  Vercel Backend  |<-------------|  Web Dashboard  |
+| BLE scanner |  /api/attendance | api/attendance.js|              |   index.html   |
+| + DS3231 RTC|               +------------------+              | + AI ID check   |
++-------------+                            |                     +-----------------+
+                                     +-----v------+
+                                     |    Redis   |
+                                     | (KV store) |
+                                     +------------+
 ```
 
-### Technology Stack
-- **AI Model**: [Roboflow Universe - id-card-detection-enon5](https://universe.roboflow.com/jays-workspace-i6huo/id-card-detection-enon5)
-- **Detection Classes**: `person`, `idcard`
-- **Confidence Threshold**: 50%+
-- **FPS**: Optimized at 10 FPS for performance
+- **ESP32** scans for student BLE beacons, tracks period timing with a DS3231 RTC,
+  and posts `{ studentId, code, status, period, ... }` records over HTTPS.
+- **Vercel API** (`api/attendance.js`) validates and deduplicates records and stores
+  them in Redis with a rolling 14-day retention window.
+- **Dashboard** polls the API and renders live status, filters, and printable reports.
 
-## 🏗️ System Architecture
+## Features
 
-```
-┌─────────────┐       ┌─────────────┐       ┌─────────────┐
-│   ESP32     │ POST  │   Vercel    │  GET  │   Website   │
-│   Scanner   │──────>│   Backend   │<──────│(GitHub Pages)│
-│   + RTC     │ Data  │   API       │ Data  │ + AI Security│
-└─────────────┘       └──────┬──────┘       └─────────────┘
-                             │
-                      ┌──────▼──────┐
-                      │ Redis  DB   │
-                      │(Enterprise) │
-                      └─────────────┘
-```
+- **ESP32 firmware** - 60-second BLE scans, RSSI filtering, DS3231 RTC with web-based
+  time setting, local web portal for on-duty/permission management, and automatic
+  present-marking during approved periods.
+- **HTTPS reporting** - `WiFiClientSecure` POSTs with BLE/SSL memory management to
+  stay within ESP32 heap limits.
+- **Smart rules** - "once present, always present" per period, period-aware validation.
+- **Persistent storage** - Redis-backed API with duplicate detection and automatic
+  14-day rolling retention (plus a 2,000-record safety cap).
+- **AI security module** - optional browser-based ID card and person detection via
+  Roboflow inference (camera required).
+- **Modern dashboard** - glassmorphism UI, live clock, multi-column filtering,
+  print-friendly reports, and responsive mobile layout.
 
-## 📦 Repository Structure
+## Quick Start
+
+### 1. Deploy the API to Vercel
+
+1. Push this repository to GitHub.
+2. Import it at [vercel.com](https://vercel.com) (Node.js preset, framework: Other).
+3. Create a Redis database and set its connection string in the project's
+   **Environment Variables** as `REDIS_URL` (or `KV_URL`). `api/attendance.js` reads
+   one of these at runtime - no code changes needed.
+4. Note your deployment URL, e.g. `https://your-project.vercel.app`.
+
+The `vercel.json` rewrite also serves `index.html` from the same deployment, so the
+dashboard is live immediately. A GitHub Pages workflow is included as an alternative
+static host for the frontend.
+
+### 2. Flash the ESP32
+
+1. Open `esp32_attendance_optimized.ino` in the Arduino IDE.
+2. Set `WIFI_SSID`, `WIFI_PASSWORD`, and `SERVER_URL` (point it at your Vercel
+   deployment, e.g. `https://your-project.vercel.app/api/attendance`).
+3. Flash the board and open the Serial Monitor at 115200 baud.
+
+See [ESP32_SETUP_GUIDE.md](ESP32_SETUP_GUIDE.md) and
+[HARDWARE_GUIDE.md](HARDWARE_GUIDE.md) for wiring, component lists, and the full
+firmware walkthrough.
+
+### 3. Use the dashboard
+
+1. Open your deployment URL.
+2. Sign in with the default credentials below.
+3. Attendance should appear automatically as the ESP32 reports it.
+
+> Default login (demo only - change it in `index.html` before public use):
+> **Username** `Principal` / **Password** `admin`
+
+## Documentation
+
+Full guides are kept as separate documents to stay maintainable:
+
+| Guide | Contents |
+|-------|----------|
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Step-by-step Vercel + Redis + GitHub Pages deployment |
+| [ESP32_SETUP_GUIDE.md](ESP32_SETUP_GUIDE.md) | ESP32 setup, wiring, and configuration |
+| [API_DOCUMENTATION.md](API_DOCUMENTATION.md) | API endpoints, request/response formats, examples |
+| [HARDWARE_GUIDE.md](HARDWARE_GUIDE.md) | Component list, assembly, troubleshooting |
+| [esp32_code_explanation.md](esp32_code_explanation.md) | Line-by-line firmware walkthrough |
+
+## Repository Structure
 
 ```
 BLE-Attendance-system/
-├── api/
-│   ├── attendance.js              # Vercel serverless function (POST/GET attendance)
-│   └── students.js                # Students list API
-├── esp32_ble_scanner/
-│   └── esp32_ble_scanner.ino      # Original ESP32 firmware (template)
-├── esp32_attendance_optimized.ino  # ESP32 firmware v2.0 (production)
-├── index.html                     # Main web application (includes AI Security)
-├── vercel.json                    # Vercel configuration
-├── package.json                   # Node.js dependencies
-├── esp32_code_explanation.md      # Detailed code walkthrough
-├── esp32_code_explanation.pdf     # PDF version of code walkthrough
-├── debugging_walkthrough.md       # HTTPS debugging journey
-├── debugging_walkthrough.pdf      # PDF version of debugging walkthrough
-├── DEPLOYMENT.md                  # Complete deployment guide
-├── ESP32_SETUP_GUIDE.md           # Hardware setup instructions
-├── API_DOCUMENTATION.md           # API reference
-├── HARDWARE_GUIDE.md              # Hardware assembly guide
-└── README.md                      # This file
+├── api/                              # Vercel serverless functions
+│   ├── attendance.js                 # POST/GET attendance records
+│   ├── students.js                   # Student registry API
+│   └── debug-kv.js                   # Env/KV diagnostics (disabled in production)
+├── scripts/
+│   ├── seed_mock_data.js             # Seed Redis with 10 days of mock records
+│   └── clear_db.js                   # Clear the attendance key in Redis
+├── index.html                        # Web dashboard (+ AI security module)
+├── esp32_attendance_optimized.ino    # ESP32 firmware
+├── vercel.json                       # Vercel rewrites + CORS headers
+├── package.json                      # npm scripts and dependencies
+└── docs as listed above              # Deployment and hardware guides
 ```
 
-## 🚀 Quick Start
+## API Overview
 
-### 1. Deploy to Vercel
-**Note the URL**: `https://your-project.vercel.app`
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/api/attendance` | POST | ESP32 reports attendance; returns `recordId` |
+| `/api/attendance` | GET | Fetch records, filterable by `date`, `studentId`, `irregularities` |
+| `/api/students` | GET | List registered students |
 
-### 2. Configure & Upload ESP32
+See [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for full request/response examples.
 
-1. Update `esp32_attendance_optimized.ino`:
-   ```cpp
-   const char* WIFI_SSID = "Your-WiFi";
-   const char* WIFI_PASSWORD = "Your-Password";
-   const char* SERVER_URL = "https://your-project.vercel.app/api/attendance";
-   ```
+## Development
 
-2. Upload to ESP32 via Arduino IDE
-
-### 3. Setup AI Security (Optional)
-
-The AI security module is already integrated. To use it:
-
-1. Open the web application
-2. Navigate to **Security** section
-3. Click **Start Camera**
-4. Allow camera permissions when prompted
-5. The AI will start detecting persons and ID cards automatically
-
-**Note**: Requires a Roboflow API key (already configured in the code).
-
-## 📚 Complete Documentation
-
-| Guide | Description |
-|-------|-------------|
-| **[DEPLOYMENT.md](DEPLOYMENT.md)** | Complete deployment instructions for Vercel & GitHub Pages |
-| **[ESP32_SETUP_GUIDE.md](ESP32_SETUP_GUIDE.md)** | ESP32 hardware setup, wiring, and configuration |
-| **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** | API endpoints, request/response formats, examples |
-| **[HARDWARE_GUIDE.md](HARDWARE_GUIDE.md)** | Component list, assembly, troubleshooting |
-| **[esp32_code_explanation.md](esp32_code_explanation.md)** | Line-by-line code walkthrough with memory management |
-| **[debugging_walkthrough.md](debugging_walkthrough.md)** | HTTPS debugging journey & root cause analysis |
-
-## 🔧 Hardware Requirements
-
-- **ESP32 DevKit V1** - Main controller ($5-10)
-- **DS3231 RTC Module** - Real-time clock ($2-5)
-- **BLE Beacons** (2+) - Student ID tags ($3-8 each)
-- **Jumper Wires** - Connections ($1-2)
-- **Webcam** (for AI Security) - Built-in or USB webcam
-
-**Total Cost**: ~$20-40
-
-## 🎯 Key Features
-
-### ESP32 Firmware (v2.0)
-- ✅ 1-minute scan intervals
-- ✅ DS3231 RTC integration with web-based time setting
-- ✅ Local web server for permissions
-- ✅ Auto-present during on-duty time
-- ✅ Student ID coding (1P, 1A, 2P, 2A)
-- ✅ **HTTPS POST** to Vercel API via `WiFiClientSecure`
-- ✅ **BLE/SSL memory management** — deinit BLE before HTTPS, reinit after
-- ✅ NTP connectivity diagnostics on boot
-
-### Web Application
-- ✅ Modern glassmorphism design
-- ✅ Real-time clock display
-- ✅ Multi-column filtering
-- ✅ Print-friendly reports
-- ✅ Responsive mobile layout
-- ✅ API integration with auto-refresh
-- ✅ **🆕 AI-powered ID card verification**
-- ✅ **🆕 Real-time person + ID detection**
-- ✅ **🆕 Violation capture & logging**
-
-### Vercel Backend & Database
-- ✅ Serverless architecture
-- ✅ CORS-enabled endpoints
-- ✅ **Persistent Storage via Redis Enterprise Cloud (Redislabs)**
-- ✅ Optimized query filtering (date, student, period)
-- ✅ Auto-trimming prevents database capacity limits
-
-## 🛡️ Security Module Features
-
-| Feature | Description |
-|---------|-------------|
-| **Person Detection** | Detects people entering the camera view |
-| **ID Card Verification** | Verifies visible ID card on person |
-| **Stabilization Buffer** | 8-frame rolling average prevents flickering |
-| **Hysteresis** | Smooth state transitions (50% on, 30% off) |
-| **Violation Timer** | 3-second threshold before capturing |
-| **Debounce** | 5-second cooldown between captures |
-| **FPS Throttling** | 10 FPS for optimal performance |
-
-## 👥 Student Registry
-
-| ID | Name | Roll Number | Beacon MAC |
-|----|------|-------------|------------|
-| 1 | Mathumitha R | 310622205081 | 0E:A5:25:A0:00:16 |
-| 2 | Lipsa Sahoo | 310622205075 | 0E:A5:25:A0:00:13 |
-
-**Department**: IT-B | **Year**: 4
-
-## 📊 Period Timings
-
-| Period | Time Slot |
-|--------|-----------|
-| Period 1 | 8:15 AM - 10:15 AM |
-| Period 2 | 10:30 AM - 12:45 PM |
-| Period 3 | 1:30 PM - 3:45 PM |
-
-## 🔐 Default Credentials
-
-**Web Portal**:
-- Username: `Principal`
-- Password: `admin`
-
-⚠️ **Change these in production!**
-
-## 🌐 Live URLs (After Deployment)
-
-- **Backend API**: `https://your-project.vercel.app/api/attendance`
-- **Website**: `https://your-username.github.io/BLE-Attendance-system/`
-- **ESP32 Web Interface**: `http://[ESP32-IP-ADDRESS]`
-
-## 🧪 Testing
-
-### Test API
 ```bash
-# Get all attendance
-curl https://your-project.vercel.app/api/attendance
-
-# Get students
-curl https://your-project.vercel.app/api/students
-
-# Post test data
-curl -X POST https://your-project.vercel.app/api/attendance \
-  -H "Content-Type: application/json" \
-  -d '{"studentId":1,"code":"1P","status":"Present",...}'
+npm ci
+npm run validate   # Syntax-checks every serverless function
+npm start          # vercel dev - local API + static frontend
+npm run deploy     # vercel --prod
 ```
 
-### Test Website
-1. Open GitHub Pages URL
-2. Login with `Principal` / `admin`
-3. Navigate to Attendance section
-4. Data should load from API
+The CI workflow runs `npm ci` and `npm run validate` on every push and pull request.
 
-### Test AI Security
-1. Navigate to **Security** section
-2. Click **Start Camera**
-3. Stand in front of camera with ID card visible
-4. Verify detection: **Blue box** = Person, **Green box** = ID Card
-5. Status should show: "Verified: Person + ID Card (XX%)"
+## Security
 
-### Test ESP32
-1. Power on ESP32
-2. Check Serial Monitor (115200 baud)
-3. Look for:
-   ```
-   BLE off - Free heap: 175956 bytes
-     POST OK (200): Mathumitha R
-     POST OK (200): Lipsa Sahoo
-   BLE on - Free heap: 174444 bytes
-   ```
+Default credentials and the client-side Roboflow publishable key are demo values.
+Before a public deployment: change the dashboard login, protect the API with an API
+key (see [DEPLOYMENT.md](DEPLOYMENT.md)), and keep `REDIS_URL` in Vercel environment
+variables. See [SECURITY.md](SECURITY.md) for details.
 
-## 🛠️ Troubleshooting
+## License
 
-### Website shows "No data"
-- ✅ Check API URL in `index.html` line ~1050
-- ✅ Open browser Console (F12) for errors
-- ✅ Verify CORS settings in Vercel
-
-### ESP32 not posting (HTTPS)
-- ✅ Check WiFi credentials
-- ✅ Ensure network allows outbound HTTPS (not all hotspots do)
-- ✅ Verify SERVER_URL matches Vercel deployment
-- ✅ Check free heap > 50KB (Serial Monitor shows heap after BLE off)
-- ✅ If `connection refused`: BLE may not be releasing memory — verify `BLEDevice::deinit(true)` is called
-- ✅ Test API manually with `curl`
-
-### Beacons not detected
-- ✅ Check beacon batteries
-- ✅ Verify MAC addresses
-- ✅ Increase RSSI threshold to -90
-
-### AI Security not working
-- ✅ Check camera permissions in browser
-- ✅ Open Console (F12) for Roboflow errors
-- ✅ Verify Roboflow API key is valid
-- ✅ Ensure HTTPS (required for camera access)
-
-### "Failed to Load Data" or API 404/500 Errors
-- ✅ **Vercel Domain Collision**: If Vercel assigns a `-pink` (or similar) suffix to your backend URL because the root name was taken by a previous deployment, ensure both the `index.html` and ESP32 code use the exact `-pink` domain, NOT the root domain.
-- ✅ **Redis Connection Issues**: Some Redis Enterprise nodes fail to link natively via the Vercel Dashboard ("Already connected" error). In this case, hardcode the `redis://...` URL into the `api/attendance.js` using the standard `redis` npm package rather than `@vercel/kv`.
-- ✅ **Data Retention**: Attendance data is automatically kept for a **rolling 14-day window**. Every time a new record is saved, the system automatically removes entries older than 2 weeks to keep the dashboard fast and stay within free-tier database limits.
-
-## 📈 Future Enhancements
-
-- [x] **AI ID Card Detection** ✅ Implemented!
-- [x] **Database persistence** ✅ Implemented (Redis Enterprise)
-- [ ] Email notifications for absences
-- [ ] Real-time WebSocket updates
-- [ ] Mobile app (React Native)
-- [ ] Export to Excel/PDF
-- [ ] Multi-classroom support
-- [ ] Facial recognition (future upgrade)
-
-## 🤝 Contributing
-
-Contributions welcome! Please:
-1. Fork the repository
-2. Create feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Open Pull Request
-
-## 📄 License
-
-MIT License - See LICENSE file for details
-
-## 👨‍💻 Tech Stack
-
-- **Frontend**: HTML5, TailwindCSS, Vanilla JavaScript
-- **AI/ML**: Roboflow Inference.js (TensorFlow.js backend)
-- **Backend**: Node.js, Vercel Serverless Functions
-- **Hardware**: ESP32 (Arduino), DS3231 RTC, BLE Beacons
-- **Deployment**: Vercel (API) + GitHub Pages (Frontend)
-
-## 📞 Support
-
-For issues and questions:
-- 📖 Check [DEPLOYMENT.md](DEPLOYMENT.md) for deployment help
-- 🔧 Check [HARDWARE_GUIDE.md](HARDWARE_GUIDE.md) for hardware issues
-- 📡 Check [API_DOCUMENTATION.md](API_DOCUMENTATION.md) for API errors
-- 🐛 Open an issue on GitHub
-
----
-
-**Made with ❤️ for Smart Campus Management**
-
-**Last Updated**: February 24, 2026 | **Version**: 3.0.0 (Redis Enterprise Unified + 14-Day Rolling Retention)
+MIT - see [LICENSE](LICENSE).

@@ -1,6 +1,13 @@
 # Node
 node_modules/
-package-lock.json
+
+# Env files (never commit real secrets)
+.env
+.env.*
+!.env.example
+
+# Vercel local state
+.vercel/
 
 # OS files
 .DS_Store

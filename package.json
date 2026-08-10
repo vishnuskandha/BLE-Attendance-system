@@ -5,7 +5,8 @@
   "main": "api/attendance.js",
   "scripts": {
     "start": "vercel dev",
-    "deploy": "vercel --prod"
+    "deploy": "vercel --prod",
+    "validate": "node scripts/validate_api.mjs"
   },
   "keywords": [
     "ble",
