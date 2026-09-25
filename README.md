@@ -1,4 +1,8 @@
+<div align="center">
+
 # BLE Attendance System
+
+</div>
 
 
 <!-- README polish: repository metadata badges -->
